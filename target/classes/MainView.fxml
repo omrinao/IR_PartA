@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="507.0" prefWidth="769.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MVVM.View">
+   <children>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#787773" height="154.0" layoutX="294.0" layoutY="217.0" stroke="BLACK" strokeType="INSIDE" width="393.0" />
+      <BorderPane prefHeight="507.0" prefWidth="769.0">
+         <top>
+            <Pane prefHeight="44.0" prefWidth="600.0" BorderPane.alignment="CENTER" />
+         </top>
+         <center>
+            <GridPane prefHeight="349.0" prefWidth="748.0" BorderPane.alignment="CENTER">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="229.0" minWidth="10.0" prefWidth="229.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="286.0" minWidth="10.0" prefWidth="227.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="259.0" minWidth="10.0" prefWidth="108.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints maxHeight="140.0" minHeight="10.0" prefHeight="66.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="207.0" minHeight="10.0" prefHeight="63.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="245.0" minHeight="10.0" prefHeight="39.0" vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="230.0" minHeight="10.0" prefHeight="59.0" vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="230.0" minHeight="10.0" prefHeight="79.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <Button mnemonicParsing="false" onAction="#directoryBrowseEvent" text="Browse" GridPane.columnIndex="2" />
+                  <Label alignment="CENTER_RIGHT" prefHeight="34.0" prefWidth="227.0" text="File directory: " textFill="WHITE">
+                     <font>
+                        <Font name="Calibri Bold" size="16.0" />
+                     </font></Label>
+                  <TextField fx:id="corpus" GridPane.columnIndex="1" />
+                  <Label alignment="CENTER_RIGHT" prefHeight="34.0" prefWidth="229.0" text="Dictionary and Posting directory:  " textFill="WHITE" GridPane.rowIndex="1">
+                     <font>
+                        <Font name="Calibri Bold" size="16.0" />
+                     </font></Label>
+                  <TextField fx:id="dictpost" layoutX="10.0" layoutY="22.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <ComboBox prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <Label alignment="CENTER_RIGHT" prefHeight="21.0" prefWidth="224.0" text="Language: " textFill="WHITE" GridPane.rowIndex="2">
+                     <font>
+                        <Font name="Calibri" size="16.0" />
+                     </font></Label>
+                  <CheckBox fx:id="stemming" mnemonicParsing="false" prefHeight="28.0" prefWidth="103.0" text="Stemming" textFill="WHITE" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                     <font>
+                        <Font name="Calibri Bold" size="16.0" />
+                     </font></CheckBox>
+                  <Button layoutX="10.0" layoutY="20.0" mnemonicParsing="false" onAction="#dictionaryBrowseEvent" text="Browse" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                  <Button alignment="CENTER" layoutX="10.0" layoutY="20.0" mnemonicParsing="false" onAction="#executeEvent" text="Execute" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="BOTTOM" />
+                  <Button layoutX="10.0" layoutY="20.0" mnemonicParsing="false" onAction="#resetEvent" text="Reset" GridPane.columnIndex="2" GridPane.rowIndex="3" GridPane.valignment="BOTTOM" />
+                  <Button layoutX="10.0" layoutY="20.0" mnemonicParsing="false" onAction="#showDictEvent" text="Show Dictionary" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
+                  <Button layoutX="10.0" layoutY="20.0" mnemonicParsing="false" onAction="#loadDictEvent" scaleShape="false" text="Load Dictionary" GridPane.columnIndex="2" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
+               </children>
+            </GridPane>
+         </center>
+         <bottom>
+            <Pane prefHeight="157.0" prefWidth="769.0" BorderPane.alignment="CENTER" />
+         </bottom>
+         <left>
+            <Pane prefHeight="315.0" prefWidth="20.0" BorderPane.alignment="CENTER" />
+         </left>
+         <right>
+            <Pane prefHeight="271.0" prefWidth="1.0" BorderPane.alignment="CENTER" />
+         </right>
+      </BorderPane>
+   </children>
+</AnchorPane>

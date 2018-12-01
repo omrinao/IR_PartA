@@ -1,0 +1,35 @@
+.root{
+     -fx-background-image: url("background.jpg");
+      -fx-background-position: left top, center;
+      -fx-background-repeat: no-repeat;
+      -fx-background-size: cover, auto;
+     -fx-font-size: 10pt;
+ }
+
+ .button{
+
+-fx-background-color:
+        #ecebe9,
+        rgba(0,0,0,0.05),
+        linear-gradient(#dcca8a, #c7a740),
+        linear-gradient(#f9f2d6 0%, #f4e5bc 20%, #e6c75d 80%, #e2c045 100%),
+        linear-gradient(#f6ebbe, #e6c34d);
+    -fx-background-insets: 0,9 9 8 9,9,10,11;
+    -fx-background-radius: 20;
+    -fx-padding: 10 20 10 20;
+    -fx-font-family: "Helvetica";
+    -fx-font-size: 14px;
+    -fx-text-fill: #311c09;
+    -fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.1) , 2, 0.0 , 0 , 1);
+ }
+
+ .button:hover{
+   -fx-background-color:#eed682;
+   -fx-text-fill:black;
+   -fx-font-weight:bold;
+  }
+
+   .label{
+       -fx-text-fill: #e8e8e8;
+
+    }
