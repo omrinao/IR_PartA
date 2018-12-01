@@ -53,6 +53,7 @@ public class Parser implements Runnable{
         while (true) {
             try {
                 d = _beforeParse.take();
+                System.out.println("took doc: " + d.getDocNum());
                 if (d.getFinal()) { // checking if the last one
                     _afterParse.put(d);
                     System.out.println("Parse: Parsing is DONE, send to Indexing");
@@ -60,7 +61,7 @@ public class Parser implements Runnable{
                 }
                 String allText = d.getText();
                 if (allText == null || allText.isEmpty())
-                    return;
+                    continue;
                 allText = allText.replace(",", "");
                 String[] words = allText.split("\\s+");
                 IntWrapper location = new IntWrapper(0);
@@ -73,7 +74,6 @@ public class Parser implements Runnable{
                         int finalIdx = words.length - 1;
                         LinkedHashMap<String, ArrayList<Integer>> toInsert = d.getTermsMap();
                         boolean wordInsert = false;
-                        boolean stem = false;// a variable that will tell us if stem was mark by the user (GUI)
                         boolean monthFix = false;
 
                         word = removePeriod(word);
@@ -323,292 +323,10 @@ public class Parser implements Runnable{
                 _afterParse.put(d);
                 d.setText(null);
             } catch (Exception e) {
-
+                System.out.println("bad");
             }
 
-            d.setText(null);
         }
-    }
-
-    /**
-     * a method to classify current observed word into the proper term it is
-     * @param idx - the idx of the first word
-     * @param text - the entire document text
-     * @param d - the document
-     * @return - the idx of the last word in the term
-     */
-    private int classify(int idx, String[] text, Document d, IntWrapper location) throws Exception {
-        String finalTerm = null;
-        String word = text[idx];
-        int finalIdx = text.length - 1;
-        LinkedHashMap<String, ArrayList<Integer>> toInsert = d.getTermsMap();
-        boolean wordInsert = false;
-        boolean stem = false;
-
-        word = removePeriod(word);
-        if (word.isEmpty())
-            return idx;
-
-        if (word.contains("$")){
-
-            finalTerm = isPrice(idx, text);
-            if (idx+1 <= finalIdx && priceOrNum(removePeriod(text[idx+1])))
-                idx++;
-        }
-
-
-        else if (word.contains("%"))
-            finalTerm = isPercentage(idx, text);
-
-        else if (word.toLowerCase().equals("between") && idx+3 <= finalIdx){
-            if (isNumericValue(text[idx+1])){
-                String num1ID = text[idx+2];
-                if (priceOrNum(num1ID)){ // number 1 has ID
-                    String[] firstArgPieces = {text[idx+1], num1ID};
-                    String firstArg = isNumber(0, firstArgPieces);
-
-                    if (text[idx+3].toLowerCase().equals("and")){ // continued by 'and'
-                        if (idx+4 <= finalIdx && isNumericValue(text[idx+4])){ // after and is numeric
-                            if (idx+5 <= finalIdx && priceOrNum(text[idx+5])){ // checking for ID
-                                String[] secondArgPieces = {text[idx+4], text[idx+5]};
-                                String secondArg = "" + isNumber(0, secondArgPieces);
-
-                                finalTerm = word + " " +firstArg + " and " + secondArg;
-                                idx = idx+5;
-                            }
-                            else{
-                                finalTerm = word + " " + firstArg + " and " + text[idx+4];
-                                idx = idx + 4;
-                            }
-                        }
-                    }
-                }
-                else if (text[idx+2].toLowerCase().equals("and")){ // no ID, continued by and
-                    String[] firstArgPieces2 = {text[idx+1]};
-                    String firstArg2 = isNumber(0, firstArgPieces2);
-                    if (isNumericValue(text[idx+3])){
-                        if (idx+4 <= finalIdx && priceOrNum(text[idx+4])){ // second num has ID
-                            String[] secondArgPieces2 = {text[idx+3], text[idx+4]};
-                            String secondArg2 = isNumber(0, secondArgPieces2);
-
-
-                            finalTerm = word + " " + firstArg2 + " and " + secondArg2;
-                            idx = idx +4;
-                        }
-                        else {
-                            finalTerm = word + " " + firstArg2 + " and " + text[idx+3];
-                            idx = idx+3;
-                        }
-                    }
-                }
-            }
-        }
-
-        else if (!getMonth(word).isEmpty()){
-            if (idx+1 <= finalIdx && isNumericValue(removePeriod(text[idx+1]))){
-                finalTerm = isDate(idx, text);
-                idx++;
-            }
-            else{
-                finalTerm = word;
-            }
-        }
-
-
-        else if (isNumericValue(word)){ // the first word is numeric
-
-            if (idx + 1 <= finalIdx ){
-                String word2 = removePeriod(text[idx+1]);
-
-                if (word2.toLowerCase().equals("percent") || word2.toLowerCase().equals("percentage")){// it's perecnt type
-                    finalTerm = isPercentage(idx, text);
-                    idx++;
-                }
-
-
-                else if (!getMonth(word2).isEmpty()){// it's date type
-                    finalTerm = isDate(idx, text);
-                    idx++;
-                }
-
-                else if (priceOrNum(word2)){ // it's price or number. WON'T be range since range contains '-'
-                    if (idx+2 <= finalIdx){ // has 3rd word
-                        String word3 = removePeriod(text[idx+2].toLowerCase());
-                        if (word3.equals("dollars")){// word 3 is dollars
-                            finalTerm = isPrice(idx, text);
-                            idx = idx+2;
-                        }
-                        else if (word3.equals("u.s")){ // word 3 is u.s
-                            if (idx + 3 <= finalIdx && removePeriod(text[idx+3].toLowerCase()).equals("dollars")){
-                                finalTerm = isPrice(idx, text);
-                                idx = idx+3;
-                            }
-
-                            else{
-                                finalTerm = isNumber(idx, text);
-                                idx = idx+1;
-                            }
-
-                        }
-                        else{ // word3 is anything else
-                            finalTerm = isNumber(idx, text);
-                            idx = idx+1;
-                        }
-                    }
-                    else{ // does not have 3rd word
-                        finalTerm = isNumber(idx, text);
-                        idx = idx+1;
-                    }
-                }
-
-                else if (word2.contains("-")){ // it's range
-                    String[] splitRange = word2.split("-");
-                    String firstArg = null;
-                    if (splitRange.length >= 2){
-                        if (priceOrNum(splitRange[0])){ // first arg of range is number with ID
-                            String[] number = {word, splitRange[0]};
-                            firstArg = isNumber(0, number);
-
-                            if (isNumericValue(splitRange[1])){ // second arg of range is number
-                                if (idx+2 <= finalIdx && priceOrNum(text[idx+2])){
-                                    String secondArg = null;
-                                    String[] number2 = {splitRange[1], text[idx+2]};
-                                    secondArg = isNumber(0, number2);
-
-                                    finalTerm = "" + firstArg + "-" + secondArg;
-                                    idx = idx + 2;
-                                }
-                                else{ // second arg is number but not priceOrNum
-                                    finalTerm = firstArg +"-" + splitRange[1];
-                                    idx = idx +1;
-                                }
-                            }
-                            else{
-                                finalTerm = firstArg + "-" + splitRange[1];
-                                idx = idx+1;
-                            }
-                        }
-                        else{
-                            finalTerm = isNumber(idx, text); // do not advance idx
-                        }
-                    }
-                }
-                else{
-                    finalTerm = isNumber(idx, text);
-                }
-            }
-            else
-                finalTerm = isNumber(idx, text);
-        }
-        else if (word.contains("-")){
-            // first arg is word. need to check if second arg is number
-            String[] split3 = word.split("-");
-            if (split3.length >= 2){
-                /*
-                number w/o ID. for example: 6-7
-                 */
-                String firstArg = null;
-                String secondArg;
-                if (isNumericValue(split3[0]))
-                    firstArg = split3[0];
-
-                if (isNumericValue(split3[1])){ // second arg is numeric
-                    if (idx+1 <= finalIdx){
-                        String word2 = removePeriod(text[idx+1]);
-                        if (priceOrNum(word2)){
-                            String[] number = {split3[1], word2};
-                            secondArg = isNumber(0, number);
-
-                            if (firstArg == null){ // type: w-m_i
-                                finalTerm = split3[0] + "-" + secondArg;
-                                idx = idx +1;
-                            }
-                            else{ // type: m_i-m_i
-                                finalTerm = firstArg + "-" + secondArg;
-                                idx = idx+1;
-                            }
-                        }
-                        else{
-                            finalTerm = word;
-                        }
-                    }
-                    else
-                        finalTerm = word;
-                }
-                else
-                    finalTerm = word;
-            }
-        }
-
-
-        else if (m_stopWords.contains(word.toLowerCase())) // STOP WORD CASE
-            return idx;
-
-
-        else {
-            finalTerm = word;
-            wordInsert = true;
-            String firstLetter = "" + finalTerm.charAt(0);
-            if (stem) {//stemming case
-                Stemmer stm = new Stemmer();
-                char[] w = new char[50];
-                int ch = finalTerm.charAt(0);
-                if (Character.isLetter((char) ch)) {
-                    int j = 0;
-                    while (j < finalTerm.length()) {
-                        ch = finalTerm.charAt(j);
-                        ch = Character.toLowerCase((char) ch);
-                        w[j] = (char) ch;
-                        if (j < 50) j++;
-                    }
-                    for (int i = 0; i < finalTerm.length(); i++)
-                        stm.add(w[i]);
-
-                    stm.stem();
-                    finalTerm = stm.toString();
-                }
-            }
-
-            if (firstLetter.equals(firstLetter.toUpperCase())) { // upper letter case
-                if (toInsert.containsKey(finalTerm.toLowerCase())) {
-                    toInsert.get(finalTerm.toLowerCase()).add(location.get_value());
-                } else if (toInsert.containsKey(finalTerm.toUpperCase()))
-                    toInsert.get(finalTerm.toUpperCase()).add(location.get_value());
-                else {
-                    ArrayList<Integer> termLocations = new ArrayList<>();
-                    termLocations.add(location.get_value());
-                    toInsert.put(finalTerm.toUpperCase(), termLocations);
-                }
-            } else {
-                if (toInsert.containsKey(finalTerm.toLowerCase()))
-                    toInsert.get(finalTerm.toLowerCase()).add(location.get_value());
-                else if (toInsert.containsKey(finalTerm.toUpperCase())) {
-                    ArrayList<Integer> termLoc = toInsert.remove(finalTerm.toUpperCase());
-                    termLoc.add(location.get_value());
-                    toInsert.put(finalTerm.toLowerCase(), termLoc);
-                } else {
-                    ArrayList<Integer> termLocations = new ArrayList<>();
-                    termLocations.add(location.get_value());
-                    toInsert.put(finalTerm.toLowerCase(), termLocations);
-                }
-            }
-            location.increase();
-        }
-
-        if (!wordInsert && finalTerm!=null){
-            if (toInsert.containsKey(finalTerm)){
-                toInsert.get(finalTerm).add(location.get_value());
-                location.increase();
-            }
-            else {
-                ArrayList<Integer> termLocations = new ArrayList<>();
-                termLocations.add(location.get_value());
-                toInsert.put(finalTerm, termLocations);
-                location.increase();
-            }
-        }
-
-        return idx;
     }
 
     /**

@@ -64,6 +64,7 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
         HashMap<Path, Exception> problemPaths = new HashMap<>();
 
         try (Stream<Path> paths = Files.walk(Paths.get(_corpusPath), 2)){
+            System.out.println("Reading files");
             paths.filter(Files::isRegularFile).forEach(new Consumer<Path>() {
                 @Override
                 public void accept(Path path) {
