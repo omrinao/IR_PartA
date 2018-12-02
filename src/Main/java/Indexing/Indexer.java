@@ -56,6 +56,8 @@ public class Indexer implements Runnable {
                     break;
                 }
 
+                d.setLength(d.getTermsMap().size()); // setting length of the document for later use
+
                 LinkedHashMap<String, ArrayList<Integer>> docTerms = d.getTermsMap();
                 for (String term: docTerms.keySet()) {//inserting to dictionary + partial posting
 

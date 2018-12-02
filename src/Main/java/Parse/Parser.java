@@ -77,6 +77,10 @@ public class Parser implements Runnable{
                         boolean monthFix = false;
 
                         word = removePeriod(word);
+                        /* this could be an extra rule
+                        if (word.toLowerCase().endsWith("'s")){
+                            word = word.substring(0, word.length()-2);
+                        }*/
                         if (word.isEmpty())
                             continue;
 

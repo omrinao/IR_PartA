@@ -28,7 +28,10 @@ public class Document {
     public Document(String fullDoc) {
         m_terms = new LinkedHashMap<>();
         m_cityTerms = new ArrayList<>();
+        m_city = "";
         m_text = "";
+        m_title = "";
+        m_date = "";
         m_isFinal = false;
 
         int textTag = fullDoc.indexOf("<TEXT>");
@@ -44,7 +47,6 @@ public class Document {
             m_text = "";
         }
 
-        m_length = m_text.length();
     }
 
     /**
@@ -99,10 +101,14 @@ public class Document {
         endIdx = sub.indexOf("</F P=104>");
         if (startIdx != -1 && endIdx != -1 && startIdx<endIdx){
             String cityVal = sub.substring(startIdx + 9, endIdx).trim();
-            m_city = cityVal.split(" ")[0];
-            if ((m_city.isEmpty()))
-                m_city = "";
-
+            String[] parsedCities = cityVal.split(" ");
+            if (parsedCities.length >= 2){
+                m_city = parsedCities[0] + parsedCities[1];
+            }
+            else
+            {
+                m_city = parsedCities[0];
+            }
         }
 
     }
@@ -155,5 +161,8 @@ public class Document {
         return m_cityTerms;
     }
 
+    public void setLength(int length){
+        this.m_length = length;
+    }
 
 }
