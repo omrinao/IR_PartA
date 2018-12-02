@@ -1,5 +1,6 @@
 package MVVM;
 
+import Indexing.TermData;
 import javafx.application.Application;
 import javafx.beans.Observable;
 import javafx.event.ActionEvent;
@@ -7,13 +8,16 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Observer;
 
 public class View implements Observer {
@@ -154,7 +158,52 @@ public class View implements Observer {
      */
     @Override
     public void update(java.util.Observable o, Object arg) {
+        if (o == vm){
+            if (arg instanceof HashMap){
+                HashMap<String, TermData> dictionary = (HashMap<String, TermData>) arg;
 
+                displayDictionary(dictionary);
+            }
+            else if (arg instanceof String){
+                String info = (String) arg;
+                if (info.contains("Error")){
+                    popProblem(info);
+                }
+                else{
+                    popInfo(info);
+                }
+            }
+        }
+    }
+
+    private void popInfo(String info) {
+        Alert prob = new Alert(Alert.AlertType.INFORMATION);
+        DialogPane dialogPane = prob.getDialogPane();
+        //dialogPane.getStylesheets().add(getClass().getResource("ViewStyle.css").toExternalForm());
+        //dialogPane.getStyleClass().add("myDialog");
+
+        prob.setContentText(info);
+        prob.showAndWait();
+    }
+
+    private void displayDictionary(HashMap<String, TermData> dictionary) {
+        // TODO
+    }
+
+
+    /**
+     * a method to pop errors with a description
+     *
+     * @param description - of the error occured
+     */
+    private void popProblem(String description) {
+        Alert prob = new Alert(Alert.AlertType.ERROR);
+        DialogPane dialogPane = prob.getDialogPane();
+        //dialogPane.getStylesheets().add(getClass().getResource("ViewStyle.css").toExternalForm());
+        //dialogPane.getStyleClass().add("myDialog");
+
+        prob.setContentText(description);
+        prob.showAndWait();
     }
 }
 
