@@ -167,10 +167,10 @@ public class Indexer implements Runnable {
     private void writeDictionary() {
         String path;
         if (_stemmer){
-            path = WORKING_DIRECTORY + STEMMER + " Dictionary";
+            path = WORKING_DIRECTORY + STEMMER + "TermsDictionary";
         }
         else{
-            path = WORKING_DIRECTORY + " Dictionary";
+            path = WORKING_DIRECTORY + "TermsDictionary";
         }
 
         try(ObjectOutputStream write = new ObjectOutputStream(new FileOutputStream(path));) {

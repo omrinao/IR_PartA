@@ -1,6 +1,7 @@
 package MVVM;
 
 import javafx.application.Application;
+import javafx.beans.Observable;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -13,16 +14,21 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.Observer;
 
-public class View {
+public class View implements Observer {
+
+    private ViewModel vm;
 
     @FXML
     public TextField corpus;
     public TextField dictpost;
     public CheckBox stemming;
-    private ViewModel vm = new ViewModel();
 
 
+    public void setVm(ViewModel vm) {
+        this.vm = vm;
+    }
 
     /**
      * this method will allow the user to select a directory from the computer
@@ -90,10 +96,9 @@ public class View {
     public void resetEvent(ActionEvent actionEvent) {
 
         try {
-            String [] details = new String[3];
-            details[0] = String.valueOf(stemming.isSelected());
-            details[1] = corpus.getText();
-            details[2] = dictpost.getText();
+            String [] details = new String[2];
+            details[0] = corpus.getText();
+            details[1] = dictpost.getText();
             vm.reset(details);
             stemming.setSelected(false);
             corpus.setText("");
@@ -138,5 +143,18 @@ public class View {
         }
     }
 
+    /**
+     * This method is called whenever the observed object is changed. An
+     * application calls an <tt>Observable</tt> object's
+     * <code>notifyObservers</code> method to have all the object's
+     * observers notified of the change.
+     *
+     * @param o   the observable object.
+     * @param arg an argument passed to the <code>notifyObservers</code>
+     */
+    @Override
+    public void update(java.util.Observable o, Object arg) {
+
+    }
 }
 

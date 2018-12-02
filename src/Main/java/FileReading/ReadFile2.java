@@ -22,6 +22,7 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
     private String _originalPath;
     private BlockingQueue<Document> _documentsQueue;
     private Parser _parser;
+    private int _docNum;
 
 
     public ReadFile2(String path) {
@@ -29,6 +30,7 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
         this._corpusPath = path + "\\corpus";
         numOfDocRead = 0;
         numOfFilesRead = 0;
+        _docNum = 0;
     }
 
     public void setQueue(BlockingQueue<Document> queue){
@@ -90,17 +92,46 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
     }
 
     private void extractDocs(Path path) throws IOException, InterruptedException {
-        String entireFile = new String(Files.readAllBytes(path));
 
-        String[] splitByDoc = entireFile.split("<DOC>");
-        for (String doc :
-                splitByDoc) {
-            Document d = new Document(doc);
-            //System.out.println("Read doc: " + d.getDocNum());
-            _documentsQueue.put(d);
+        try (BufferedReader br = new BufferedReader(new FileReader(path.toString()))) {
+            String line;
+            StringBuilder s = new StringBuilder();
+            boolean sameDoc = false;
+            short startLine = 0;
+            short endLine = 0;
+            short lineCounter = -1;
+
+            while ((line = br.readLine()) != null) {
+                lineCounter++;
+                if (sameDoc && !line.contains("</DOC>")) {
+                    s.append(line).append("\n");
+                }
+
+                else if (line.contains("<DOC>")) {
+                    sameDoc = true;
+                    startLine = lineCounter;
+                }
+
+                else if (line.contains("</DOC>")){
+                    sameDoc = false;
+                    endLine = lineCounter;
+
+                    Document d = new Document(s.toString(), startLine, endLine, _docNum, path.getFileName().toString());
+                    _docNum++;
+
+                    _documentsQueue.put(d);
+                    numOfDocRead++;
+                    s.setLength(0);
+                }
+
+
+            }
         }
-
+        catch (IOException e) {
+            throw new IOException(e);
+        }
     }
+
 
 
     /**
@@ -120,7 +151,7 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
      */
 
     public static void main(String[] args){
-/*        long start = System.nanoTime();
+        long start = System.nanoTime();
         System.out.println("Started");
 
         // initing classes
@@ -188,9 +219,9 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        */
+        /*
         try{
-            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\IdeaProjects\\IR_PartA\\ Dictionary"));
+            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\IdeaProjects\\IR_PartA\\TermsDictionary"));
             HashMap<String, TermData> dict = (HashMap<String, TermData>) inputStream.readObject();
             inputStream.close();
             RandomAccessFile file = new RandomAccessFile(System.getProperty("user.dir") + "\\FinalPosting.txt", "r" );
@@ -210,7 +241,7 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
             System.out.println("cant open file \n" + e.getMessage());
         }catch (ClassNotFoundException f){
             System.out.println("object is not good " + f.getMessage());
-        }
+        }*/
     }
 
     /**

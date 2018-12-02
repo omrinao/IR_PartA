@@ -18,6 +18,10 @@ public class Document {
     private int m_length;
     private boolean m_isFinal;
 
+    private short _startLine;
+    private short _endLine;
+    private String _path;
+
     private LinkedHashMap<String, ArrayList<Integer>> m_terms;
     private ArrayList<Integer> m_cityTerms;
 
@@ -25,7 +29,7 @@ public class Document {
      * c'tor of full doc
      * @param fullDoc - string that represents a full document
      */
-    public Document(String fullDoc) {
+    public Document(String fullDoc, short start, short end, int id, String path) {
         m_terms = new LinkedHashMap<>();
         m_cityTerms = new ArrayList<>();
         m_city = "";
@@ -33,6 +37,10 @@ public class Document {
         m_title = "";
         m_date = "";
         m_isFinal = false;
+        _startLine = start;
+        _endLine = end;
+        m_docNum = "" + id;
+        _path = path;
 
         int textTag = fullDoc.indexOf("<TEXT>");
         int textEndTag = fullDoc.indexOf("</TEXT>");
@@ -74,7 +82,7 @@ public class Document {
      * @param sub - substring of the full document containing the headers
      */
     private void extractHeaders(String sub) {
-        int startIdx = sub.indexOf("<DOCNO>");
+        /* int startIdx = sub.indexOf("<DOCNO>");
         int endIdx = sub.indexOf("</DOCNO>");
         if (startIdx!=-1 &&
                 endIdx!=-1 &&
@@ -82,9 +90,10 @@ public class Document {
             m_docNum = sub.substring(startIdx + 7,endIdx).trim();
         else
             m_docNum = "";
+        */
 
-        startIdx = sub.indexOf("<DATE1>");
-        endIdx = sub.indexOf("</DATE1>");
+        int startIdx = sub.indexOf("<DATE1>");
+        int endIdx = sub.indexOf("</DATE1>");
         if (startIdx!=-1 && endIdx!=-1 && startIdx<endIdx)
             m_date = sub.substring(startIdx + 7,endIdx).trim();
         else
@@ -113,6 +122,9 @@ public class Document {
 
     }
 
+    public Document(String name){
+
+    }
 
     public void setFinal (boolean isLast){
         this.m_isFinal = isLast;
@@ -164,5 +176,7 @@ public class Document {
     public void setLength(int length){
         this.m_length = length;
     }
+
+
 
 }
