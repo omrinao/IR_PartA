@@ -41,7 +41,7 @@ public class Model extends Observable {
         t.start();
 
         setChanged();
-        notifyObservers("Processing has begun!");
+        notifyObservers("Processing has began!");
     }
 
 
@@ -59,7 +59,7 @@ public class Model extends Observable {
         // --------- initing working classes ----------
         ReadFile2 reader = new ReadFile2(corpusPath);
         Parser parser = new Parser();
-        Indexer indexer = new Indexer(4000);
+        Indexer indexer = new Indexer(4000, writingPath);
 
         // --------- setting Read File ----------
         reader.setQueue(beforeParse);
@@ -76,7 +76,6 @@ public class Model extends Observable {
 
         // --------- setting Indexer -----------
         indexer.setDocsQueue(afterParse);
-        /* need to set path */
 
         // ----------- initing threads ----------
         long start = System.nanoTime();
@@ -182,11 +181,11 @@ public class Model extends Observable {
 
             } catch (IOException e) {
                 setChanged();
-                notifyObservers("Error at openening file: " + e.getMessage());
+                notifyObservers("Error at opening file: " + e.getMessage());
 
             } catch (ClassNotFoundException f) {
                 setChanged();
-                notifyObservers("Error at loading dicitionary: " + f.getMessage());
+                notifyObservers("Error at loading dictionary: " + f.getMessage());
             }
 
         }
