@@ -14,28 +14,15 @@ import javafx.stage.Stage;
 
 import java.io.File;
 
-public class View extends Application {
+public class View {
 
     @FXML
-    public static Stage pStage;
     public TextField corpus;
     public TextField dictpost;
     public CheckBox stemming;
     private ViewModel vm = new ViewModel();
 
-    @Override
-    public void start(Stage primaryStage) throws Exception{
 
-        pStage = primaryStage;
-        System.out.println(getClass().getResource(""));
-        FXMLLoader fxml = new FXMLLoader(getClass().getResource("../MainView.fxml"));
-        Parent root = fxml.load();
-        primaryStage.setTitle("IR 2019");
-        Scene scene = new Scene(root, 1280, 660);
-        scene.getStylesheets().add(getClass().getResource("../ViewStyle.css").toExternalForm());
-        primaryStage.setScene(scene);
-        primaryStage.show();
-    }
 
     /**
      * this method will allow the user to select a directory from the computer
@@ -46,7 +33,7 @@ public class View extends Application {
         try {
             DirectoryChooser directoryChooser = new DirectoryChooser();
             File selectedDirectory =
-                    directoryChooser.showDialog(pStage);
+                    directoryChooser.showDialog(Main.pStage);
 
             if(selectedDirectory == null){
                 corpus.setText("No Directory selected");
@@ -67,7 +54,7 @@ public class View extends Application {
         try {
             DirectoryChooser directoryChooser = new DirectoryChooser();
             File selectedDirectory =
-                    directoryChooser.showDialog(pStage);
+                    directoryChooser.showDialog(Main.pStage);
 
             if(selectedDirectory == null){
                 dictpost.setText("No Directory selected");
@@ -151,8 +138,5 @@ public class View extends Application {
         }
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
 }
 
