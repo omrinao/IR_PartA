@@ -100,21 +100,21 @@ public class IndexMerger {
 
                 if (_corpusDictionary.containsKey(origTerm.toLowerCase())){ // lower case exist!
                     _corpusDictionary.get(origTerm.toLowerCase()).m_pointer = _postingPointer;
-                    _postingPointer += toAddTerm.length();
+                  //  _postingPointer += toAddTerm.length();
                 }
                 else if (_corpusDictionary.containsKey(origTerm.toUpperCase())) { // lower case does not exist!
                     _corpusDictionary.get(origTerm.toUpperCase()).m_pointer = _postingPointer;
-                    _postingPointer += toAddTerm.length();
+                  //  _postingPointer += toAddTerm.length();
                 }
                 else if (_corpusDictionary.containsKey(origTerm)) {
                     _corpusDictionary.get(origTerm).m_pointer = _postingPointer;
-                    _postingPointer += toAddTerm.length();
+                   // _postingPointer += toAddTerm.length();
                 }
 
                 properFillQueue();
 
                 String onlyATest = origTerm + ":" + toAddTerm;
-                _postingPointer += (origTerm.length()+1);
+                _postingPointer += onlyATest.getBytes().length;//(origTerm.length()+1);
                 _postingWriter.append(onlyATest);
                 //System.out.println("wrote term: " + onlyATest);
 

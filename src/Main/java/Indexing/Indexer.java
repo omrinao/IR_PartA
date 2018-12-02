@@ -51,7 +51,7 @@ public class Indexer implements Runnable {
             try {
 
                 d = m_docsQueue.take();
-                System.out.println("taking document");
+
                 if (d.getFinal()){
                     break;
                 }
@@ -131,8 +131,6 @@ public class Indexer implements Runnable {
 
                 m_docsIndexed++; // needed for work report
                 partialIndexed++;
-
-                System.out.println("indexed doc" + d.getDocNum());
 
                 if (partialIndexed == m_docsPerPartialPosting){
                     writePartialPostings();

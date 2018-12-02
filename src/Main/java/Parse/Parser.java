@@ -53,7 +53,7 @@ public class Parser implements Runnable{
         while (true) {
             try {
                 d = _beforeParse.take();
-                System.out.println("took doc: " + d.getDocNum());
+                //System.out.println("took doc: " + d.getDocNum());
                 if (d.getFinal()) { // checking if the last one
                     _afterParse.put(d);
                     System.out.println("Parse: Parsing is DONE, send to Indexing");
