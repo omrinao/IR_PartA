@@ -23,6 +23,8 @@ public class Indexer implements Runnable {
     public HashMap<String, TermData> _corpusDictionary;         // the total corpus dictionary
     private HashMap<String, TreeSet<PostingTermData>> _partialPosting;  // the partial posting data for the current documents
 
+    private CityIndex _cityIndex; // instance of the city API, contains all API relevant details
+    private HashMap <String, CityDetails> _cityDictionary;
     //private TreeMap<String, TreeSet<PostingTermData>> _upperPartialPosting;//private HashMap<String, TermData> _upperCaseDictionary;
 
 
@@ -37,6 +39,15 @@ public class Indexer implements Runnable {
 
         this._partialPosting = new HashMap<>();
         //this._upperPartialPosting = new TreeMap<>();
+        this._cityIndex = new CityIndex();
+        this._cityDictionary = new HashMap<>();
+    }
+
+    public void cityIndex (){
+        for (String term: _corpusDictionary.keySet()
+             ) {
+            
+        }
     }
 
 
@@ -129,7 +140,30 @@ public class Indexer implements Runnable {
                             _partialPosting.put(term, treeSet);
                         }
                     }
+
+
                 } // for end
+                // inserting to city dictionary
+                if (!d.getCity().isEmpty()) {//checking if <F P=104> label is exist
+                    HashMap<String, ArrayList<Integer>> docsLocations = new HashMap<>();
+                    if (_corpusDictionary.containsKey(d.getCity())){//check if the corpus contains the city
+                        docsLocations.put(d.getDocNum(), d.getTermsMap().get(d.getCity()));//get the docnum + locations
+                    }
+                    else{
+                        docsLocations.put(d.getDocNum(), null);
+                    }
+                    if (_cityDictionary.get(d.getCity()) == null) {//city dictionary does not contains the city
+                        if (_cityIndex.getDetails(d.getCity())[0] == null) {//its not a capital city
+                            _cityDictionary.put(d.getCity(), new CityDetails(null, null, null, docsLocations));//inserting just the city name and the document number
+                        } else {// its a capital city
+                            String[] details = _cityIndex.getDetails(d.getCity());
+                            _cityDictionary.put(d.getCity(), new CityDetails(details[0], details[2], details[1], docsLocations));
+                        }
+
+                    } else {//city dictionary contains the city, updating docnum + locations
+                        _cityDictionary.get(d.getCity()).getM_docs().put(d.getDocNum(), docsLocations.get(d.getDocNum()));//adding another document
+                    }
+                }
 
                 m_docsIndexed++; // needed for work report
                 partialIndexed++;
