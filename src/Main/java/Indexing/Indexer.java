@@ -43,13 +43,6 @@ public class Indexer implements Runnable {
         this._cityDictionary = new HashMap<>();
     }
 
-    public void cityIndex (){
-        for (String term: _corpusDictionary.keySet()
-             ) {
-            
-        }
-    }
-
 
     /**
      * method to get documents and index them properly in the dictionary
