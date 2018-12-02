@@ -41,7 +41,7 @@ public class Model extends Observable {
         t.start();
 
         setChanged();
-        notifyObservers("Processing has begun!");
+        notifyObservers("Processing has began!");
     }
 
 
@@ -182,11 +182,11 @@ public class Model extends Observable {
 
             } catch (IOException e) {
                 setChanged();
-                notifyObservers("Error at openening file: " + e.getMessage());
+                notifyObservers("Error at opening file: " + e.getMessage());
 
             } catch (ClassNotFoundException f) {
                 setChanged();
-                notifyObservers("Error at loading dicitionary: " + f.getMessage());
+                notifyObservers("Error at loading dictionary: " + f.getMessage());
             }
 
         }
