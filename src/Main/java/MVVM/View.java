@@ -176,6 +176,11 @@ public class View implements Observer {
         }
     }
 
+
+    /**
+     * generic method to pop problems
+     * @param info - info that will be displayed
+     */
     private void popInfo(String info) {
         Alert prob = new Alert(Alert.AlertType.INFORMATION);
         DialogPane dialogPane = prob.getDialogPane();
