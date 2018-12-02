@@ -108,23 +108,28 @@ public class Document {
 
         startIdx = sub.indexOf("<F P=104>");
         endIdx = sub.indexOf("</F P=104>");
+        if (endIdx == -1 && startIdx != -1){
+            String temp = sub.substring(startIdx);
+            endIdx = startIdx + findFTag(temp);
+        }
         if (startIdx != -1 && endIdx != -1 && startIdx<endIdx){
             String cityVal = sub.substring(startIdx + 9, endIdx).trim();
-            String[] parsedCities = cityVal.split(" ");
-            if (parsedCities.length >= 2){
-                m_city = parsedCities[0] + parsedCities[1];
-            }
-            else
-            {
-                m_city = parsedCities[0];
-            }
+            String[] parsedCities = cityVal.split("\\s+");
+            m_city = parsedCities[0];
         }
 
     }
 
+
     public Document(String name){
 
     }
+
+    private int findFTag(String sub) {
+        return sub.indexOf("</F>");
+    }
+
+
 
     public void setFinal (boolean isLast){
         this.m_isFinal = isLast;
