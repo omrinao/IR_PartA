@@ -16,19 +16,21 @@ public class Indexer implements Runnable {
 
     private final String PARTIAL_POSTING = "PartialPosting";
     private final String TXT = ".txt";
-    private final String WORKING_DIRECTORY = System.getProperty("user.dir") + "\\";
+    private final String WORKING_DIRECTORY;
     private final String STEMMER = "STEM";
 
     private BlockingQueue<Document> m_docsQueue;            // queue of document given from the parser
     public HashMap<String, TermData> _corpusDictionary;         // the total corpus dictionary
     private HashMap<String, TreeSet<PostingTermData>> _partialPosting;  // the partial posting data for the current documents
 
-    private CityIndex _cityIndex; // instance of the city API, contains all API relevant details
+    private CityIndex _cityIndex;                            // instance of the city API, contains all API relevant details
     private HashMap <String, CityDetails> _cityDictionary;
-    //private TreeMap<String, TreeSet<PostingTermData>> _upperPartialPosting;//private HashMap<String, TermData> _upperCaseDictionary;
 
 
-    public Indexer(int docsPerPartialPosting) {
+
+
+    public Indexer(int docsPerPartialPosting, String writingLocation) {
+        this.WORKING_DIRECTORY = writingLocation + "\\";
         this.m_docsPerPartialPosting = docsPerPartialPosting;
         this.m_docsIndexed = 0;
         this.m_parsingDone = false;
@@ -41,13 +43,6 @@ public class Indexer implements Runnable {
         //this._upperPartialPosting = new TreeMap<>();
         this._cityIndex = new CityIndex();
         this._cityDictionary = new HashMap<>();
-    }
-
-    public void cityIndex (){
-        for (String term: _corpusDictionary.keySet()
-             ) {
-            
-        }
     }
 
 
@@ -93,15 +88,15 @@ public class Indexer implements Runnable {
 
                         if (_partialPosting.containsKey(term)){ // lower case exist this partial posting
                             TreeSet<PostingTermData> postingTermData = _partialPosting.get(term);  // adding to partial posting
-                            postingTermData.add(new PostingTermData(d.getDocNum(), docTerms.get(term)));
+                            postingTermData.add(new PostingTermData(d.getDocNum(), docTerms.get(term), d.getLength()));
                         }
                         else if (_partialPosting.containsKey(term.toUpperCase())){ // upper case exist this partial posting
                             TreeSet<PostingTermData> toLowerPosting = _partialPosting.remove(term.toUpperCase());
-                            toLowerPosting.add(new PostingTermData(d.getDocNum(), docTerms.get(term)));
+                            toLowerPosting.add(new PostingTermData(d.getDocNum(), docTerms.get(term), d.getLength()));
                             _partialPosting.put(term, toLowerPosting);
                         }
                         else { // upper nor lower exist this partial posting
-                            PostingTermData newPosting = new PostingTermData(d.getDocNum(), docTerms.get(term));
+                            PostingTermData newPosting = new PostingTermData(d.getDocNum(), docTerms.get(term), d.getLength());
                             TreeSet<PostingTermData> treeSet = new TreeSet<>();
                             treeSet.add(newPosting);
                             _partialPosting.put(term, treeSet);
@@ -127,14 +122,14 @@ public class Indexer implements Runnable {
 
                         if (_partialPosting.containsKey(term.toLowerCase())){ // it's an upper, but have seen a lower case this partial posting
                             TreeSet<PostingTermData> postingTreeSet = _partialPosting.get(term.toLowerCase());
-                            postingTreeSet.add(new PostingTermData(d.getDocNum(), docTerms.get(term)));
+                            postingTreeSet.add(new PostingTermData(d.getDocNum(), docTerms.get(term), d.getLength()));
                         }
                         else if (_partialPosting.containsKey(term)){ // have seen upper this partial posting
                             TreeSet<PostingTermData> postingTree = _partialPosting.get(term);
-                            postingTree.add(new PostingTermData(d.getDocNum(), docTerms.get(term)));
+                            postingTree.add(new PostingTermData(d.getDocNum(), docTerms.get(term), d.getLength()));
                         }
                         else { // upper case and does'nt exist
-                            PostingTermData termData = new PostingTermData(d.getDocNum(), docTerms.get(term));
+                            PostingTermData termData = new PostingTermData(d.getDocNum(), docTerms.get(term), d.getLength());
                             TreeSet<PostingTermData> treeSet = new TreeSet<>();
                             treeSet.add(termData);
                             _partialPosting.put(term, treeSet);
@@ -236,7 +231,7 @@ public class Indexer implements Runnable {
         }
 
         _partialPostingCount++;
-        _partialPosting = new HashMap<>(); // maybe clear
+        _partialPosting.clear(); // maybe clear
     }
 
 
@@ -281,11 +276,10 @@ public class Indexer implements Runnable {
         StringBuilder toReturn = new StringBuilder(termEntry + ":");
 
         for (PostingTermData termData : treeSet){
-            toReturn.append(termData._doc).append(" ");
-            toReturn.append(termData._termOccurrences).append(" ");
-            for (Integer location : termData._locations){
-                toReturn.append(location).append(" ");
-            }
+            toReturn.append(termData._doc).append(" "); // writing doc num
+            toReturn.append(termData._termOccurrences).append(" "); // writing doc TF
+            toReturn.append(termData._locations[0]).append(" "); // if occurred in first 20%
+            toReturn.append(termData._locations[1]); // if occurred in last 20%
             toReturn.append(",");
         }
         toReturn.append("\n");

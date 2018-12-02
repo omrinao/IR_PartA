@@ -18,7 +18,7 @@ public class ReadFile implements Runnable{
     private String _corpusPath;
     private String _originalPath;
 
-    static Indexer indexer = new Indexer(2);
+    static Indexer indexer = new Indexer(2, "");
     static BlockingQueue<Document> queue = new ArrayBlockingQueue<Document>(100);
 
     public ReadFile(String path) {
