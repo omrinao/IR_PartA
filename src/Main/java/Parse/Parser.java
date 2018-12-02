@@ -257,7 +257,10 @@ public class Parser implements Runnable{
 
 
                         if (finalTerm == null || monthFix) {
-                            finalTerm = word;
+                            finalTerm = removePeriod(word);
+                            if (finalTerm.isEmpty()){
+                                continue;
+                            }
                             wordInsert = true;
                             String firstLetter = "" + finalTerm.charAt(0);
                             if (_stemmer) {//stemming case

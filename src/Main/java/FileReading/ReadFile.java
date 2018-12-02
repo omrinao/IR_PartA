@@ -86,44 +86,16 @@ public class ReadFile implements Runnable{
      * @param f - the working file
      */
     private void splitDoc(File f, Parser p) {
-        try (BufferedReader br = new BufferedReader(new FileReader(f))) {
-            String line;
-            StringBuilder s = new StringBuilder();
-            boolean sameDoc = false;
-            int i = 0;
-            while ((line = br.readLine()) != null) {
-                if (sameDoc && !line.contains("</DOC>"))
-                    s.append(line).append("\n");
-                if (line.contains("<DOC>"))
-                    sameDoc = true;
-                if (line.contains("</DOC>")){
-                    sameDoc = false;
-                    Document d = new Document(s.toString());
-                    //Parse p = new Parse(getStopWords());
-                    p.parseDocument();
-                    queue.add(d);
+                /*String entireFile = new String(Files.readAllBytes(path));
 
-                    if (queue.size() == 5){
-                        indexer.setParserDone(true);
-                        indexer.indexDocuments();
-                        System.exit(5);
-                    }
-
-
-                    numOfDocRead++;
-                    // System.out.println(d.getDocNum() + "\n" + Arrays.toString(d.getTermsMap().entrySet().toArray()));
-                    s = new StringBuilder();
-                    i++;
-                }
-
-
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        String[] splitByDoc = entireFile.split("<DOC>");
+        for (String doc :
+                splitByDoc) {
+            Document d = new Document(doc);
+            //System.out.println("Read doc: " + d.getDocNum());
+            _documentsQueue.put(d);
+        }*/
     }
-
 
     /**
      * When an object implementing interface <code>Runnable</code> is used

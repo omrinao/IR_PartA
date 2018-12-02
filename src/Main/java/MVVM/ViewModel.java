@@ -1,22 +1,46 @@
 package MVVM;
 
-public class ViewModel {
+import java.util.Observable;
+import java.util.Observer;
 
-    private Model m = new Model();
+public class ViewModel extends Observable implements Observer {
+
+    private Model _model;
+
+    public void setM(Model m) {
+        this._model = m;
+    }
 
     public void execute(String [] details) {
-        m.execute(details);
+        _model.execute(details);
     }
 
     public void reset(String[] details) {
-        m.reset(details);
+        _model.reset(details);
     }
 
     public void loadDict(String stemming) {
-        m.loadDict(stemming);
+        _model.loadDict(stemming);
     }
 
     public void showDict(String stemming) {
-        m.showDict(stemming);
+        _model.showDict(stemming);
+    }
+
+    /**
+     * This method is called whenever the observed object is changed. An
+     * application calls an <tt>Observable</tt> object's
+     * <code>notifyObservers</code> method to have all the object's
+     * observers notified of the change.
+     *
+     * @param o   the observable object.
+     * @param arg an argument passed to the <code>notifyObservers</code>
+     */
+    @Override
+    public void update(Observable o, Object arg) {
+        if (o == _model){
+            setChanged();
+            notifyObservers(arg);
+        }
     }
 }
