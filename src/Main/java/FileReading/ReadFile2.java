@@ -155,8 +155,8 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
         System.out.println("Started");
 
         // initing classes
-        //ReadFile2 read = new ReadFile2("C:\\Users\\חגי קלינהוף\\Desktop\\שנה ג'\\סמסטר ה'\\אחזור מידע\\פרויקט מנוע\\חלק 1");
-        ReadFile2 read = new ReadFile2("C:\\Users\\חגי קלינהוף\\Desktop\\שנה ג'\\סמסטר ה'\\אחזור מידע\\פרויקט מנוע\\Part 1 tests");
+        ReadFile2 read = new ReadFile2("C:\\Users\\omri\\Desktop");
+        //ReadFile2 read = new ReadFile2("C:\\Users\\חגי קלינהוף\\Desktop\\שנה ג'\\סמסטר ה'\\אחזור מידע\\פרויקט מנוע\\Part 1 tests");
         Parser p = new Parser();
         read.setParser(p);
         p.setStopWords(read.getStopWords());
@@ -208,12 +208,12 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
             System.out.println("Indexer Alive: " + indexer.isAlive());
         }
 
-        TermData t = i._corpusDictionary.get("ARTHUR");
-        long pointer = t.getM_pointer();
+        //TermData t = i._corpusDictionary.get("ARTHUR");
+        //long pointer = t.getM_pointer();
 
         try {
             RandomAccessFile file = new RandomAccessFile(System.getProperty("user.dir") + "\\FinalPosting.txt", "r" );
-            file.seek(pointer);
+            //file.seek(pointer);
             String termLine = file.readLine();
             System.out.println(termLine);
         } catch (IOException e) {
@@ -241,7 +241,9 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
             System.out.println("cant open file \n" + e.getMessage());
         }catch (ClassNotFoundException f){
             System.out.println("object is not good " + f.getMessage());
-        }*/
+
+        }
+*/
     }
 
     /**
