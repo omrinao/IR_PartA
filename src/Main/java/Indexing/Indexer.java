@@ -150,6 +150,7 @@ public class Indexer implements Runnable {
                             _cityDictionary.put(d.getCity(), new CityDetails(null, null, null, docsLocations));//inserting just the city name and the document number
                         } else {// its a capital city
                             String[] details = _cityIndex.getDetails(d.getCity());
+                            details[1] = fixPopulation(details[1]);
                             _cityDictionary.put(d.getCity(), new CityDetails(details[0], details[2], details[1], docsLocations));
                         }
 
@@ -186,6 +187,28 @@ public class Indexer implements Runnable {
 
         writeDictionary();
         System.out.println("Exiting Indexer");
+    }
+
+    /**
+     * method that fix the population to x.yy M format
+     * @param detail - the population
+     * @return
+     */
+    private String fixPopulation(String detail) {
+        float population = 0;
+        String valueToReturn = "";
+        try{
+            population = Float.valueOf(detail);
+            if (population > 1000000){
+                population = population / 1000000;
+                valueToReturn = String.format("%.2f", population) + "M";
+            }
+        }
+        catch (Exception e){
+
+        }
+
+        return valueToReturn;
     }
 
     /**
