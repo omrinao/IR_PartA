@@ -146,8 +146,8 @@ public class Indexer implements Runnable {
                 // inserting to city dictionary
                 if (!d.getCity().isEmpty()) {//checking if <F P=104> label is exist
                     HashMap<String, ArrayList<Integer>> docsLocations = new HashMap<>();
-                    if (_corpusDictionary.containsKey(d.getCity())){//check if the corpus contains the city
-                        docsLocations.put(d.getDocNum(), d.getTermsMap().get(d.getCity()));//get the docnum + locations
+                    if (_corpusDictionary.containsKey(d.getCity().toUpperCase())){//check if the corpus contains the city
+                        docsLocations.put(d.getDocNum(), d.getTermsMap().get(d.getCity().toUpperCase()));//get the docnum + locations
                     }
                     else{
                         docsLocations.put(d.getDocNum(), null);
