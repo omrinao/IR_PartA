@@ -31,6 +31,9 @@ public class Main extends Application {
         model.addObserver(viewModel);
         viewModel.addObserver(view);
 
+        view.setVm(viewModel);
+        viewModel.setM(model);
+
 
         // ------------ ready to show
         primaryStage.show();
