@@ -29,9 +29,6 @@ public class Indexer implements Runnable {
 
     private HashMap<Integer, PostingDocData> _docData;       // structure for docs posting data
 
-
-
-
     public Indexer(int docsPerPartialPosting, String writingLocation) {
         this.WORKING_DIRECTORY = writingLocation;
         this.m_docsPerPartialPosting = docsPerPartialPosting;

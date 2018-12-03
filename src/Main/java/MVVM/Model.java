@@ -25,6 +25,7 @@ public class Model extends Observable {
     private ThreadPoolExecutor _threads;
     private String _corpusPath;
     private String _writeTo;
+    private HashMap<String, TermData> _loadedDict;
 
 
     public Model(){
@@ -162,12 +163,13 @@ public class Model extends Observable {
 
         if (Boolean.valueOf(stemming)){
             try {
-                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(_writeTo + "\\TermsDictionary"));
+                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(_writeTo + "STEMTermsDictionary"));
                 HashMap<String, TermData> dict = (HashMap<String, TermData>) inputStream.readObject();
+                _loadedDict = dict;
                 inputStream.close();
 
                 setChanged();
-                notifyObservers(dict);
+                notifyObservers("Dictionary without stemming loaded!");
 
             }catch (IOException e ){
                 setChanged();
@@ -181,12 +183,12 @@ public class Model extends Observable {
 
         else {
             try {
-                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(_writeTo + "\\STEMTermsDictionary"));
+                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(_writeTo + "TermsDictionary"));
                 HashMap<String, TermData> dict = (HashMap<String, TermData>) inputStream.readObject();
                 inputStream.close();
 
                 setChanged();
-                notifyObservers(dict);
+                notifyObservers("Dictionary with stemming loaded!");
 
             } catch (IOException e) {
                 setChanged();
@@ -201,7 +203,10 @@ public class Model extends Observable {
 
     }
 
-
+    /**
+     * method to show the content of the dictionary
+     * @param stemming - weather dictionary with stemming is requested or not
+     */
     public void showDict(String stemming) {
         //displaying dictionary
         System.out.println("check showdict");
