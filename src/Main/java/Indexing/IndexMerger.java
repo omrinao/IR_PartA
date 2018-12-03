@@ -25,7 +25,7 @@ public class IndexMerger {
     long _postingPointer;
 
 
-    public IndexMerger(String working_dir, HashMap<String, TermData> _corpusDictionary) {
+    public IndexMerger(String working_dir, HashMap<String, TermData> _corpusDictionary, boolean stemming) {
         WORKING_DIR = working_dir;
         this._corpusDictionary = _corpusDictionary;
         _postingPointer = 0;
@@ -35,7 +35,12 @@ public class IndexMerger {
         _usedBufferesIdx = new ArrayList<>();
 
         try {
-            _postingWriter = new BufferedWriter(new PrintWriter(WORKING_DIR + FINAL_Posting + TXT));
+            if (stemming){
+                _postingWriter = new BufferedWriter(new PrintWriter(WORKING_DIR + FINAL_Posting + "STEMM" + TXT));
+            }
+            else {
+                _postingWriter = new BufferedWriter(new PrintWriter(WORKING_DIR + FINAL_Posting + TXT));
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -120,7 +125,6 @@ public class IndexMerger {
                 //System.out.println("wrote term: " + onlyATest);
 
             }
-            //cutResources();
         }catch (IOException e){
 
             System.out.println("FAILED MERGING");
@@ -128,9 +132,35 @@ public class IndexMerger {
 
         finally {
             cutResources();
+            filesCleanup();
             System.out.println("finished merging. program should be over " + java.time.LocalTime.now());
         }
 
+    }
+
+    /**
+     * method to clean up all partial postings
+     */
+    public void filesCleanup() {
+        try (Stream<Path> paths = Files.walk(Paths.get(WORKING_DIR), 1)){
+            paths.filter(Files::isRegularFile).forEach(new Consumer<Path>() {
+                @Override
+                public void accept(Path path) {
+                    if (path.getName(path.getNameCount()-1).toString().startsWith("PartialPosting")) {
+
+                        try {
+                            Files.delete(path);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        //System.out.println(path);
+                    }
+                }
+            });
+        }catch (IOException e){
+            e.printStackTrace();
+        }
     }
 
     /**

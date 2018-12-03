@@ -33,7 +33,7 @@ public class Indexer implements Runnable {
 
 
     public Indexer(int docsPerPartialPosting, String writingLocation) {
-        this.WORKING_DIRECTORY = writingLocation + "\\";
+        this.WORKING_DIRECTORY = writingLocation;
         this.m_docsPerPartialPosting = docsPerPartialPosting;
         this.m_docsIndexed = 0;
         this.m_parsingDone = false;
@@ -186,7 +186,7 @@ public class Indexer implements Runnable {
         writePartialPostings(); // after finished all documents, empty the final partial posting
 
         System.out.println("FINISHED INDEXING at: " + java.time.LocalTime.now());
-        IndexMerger merger = new IndexMerger(WORKING_DIRECTORY, _corpusDictionary);
+        IndexMerger merger = new IndexMerger(WORKING_DIRECTORY, _corpusDictionary, _stemmer);
         try {
             merger.mergePostings();
         } catch (IOException e) {
@@ -218,16 +218,24 @@ public class Indexer implements Runnable {
         }
     }
 
+    /**
+     * method to write city dictionary to disk
+     */
     private void writeCityDictionary(){
-        String path = WORKING_DIRECTORY + "CityDicionary";
+        String path = null;
+        if (_stemmer){
+            path = WORKING_DIRECTORY + STEMMER + "CityDictionary";
+        }else{
+            path = WORKING_DIRECTORY + "CityDictionary";
+        }
 
-        try(ObjectOutputStream write = new ObjectOutputStream(new FileOutputStream(path));) {
+
+        try(ObjectOutputStream write = new ObjectOutputStream(new FileOutputStream(path))) {
             write.writeObject(_cityDictionary);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 
     /**
      * a method to write partial posting once needed
@@ -261,8 +269,14 @@ public class Indexer implements Runnable {
      * @throws IOException - if error occured duric writing
      */
     private void writeToDocPosting()  throws IOException{
+        String path = null;
+        if (_stemmer)
+            path = WORKING_DIRECTORY + DOC_POSTING +STEMMER + TXT;
+        else
+            path = WORKING_DIRECTORY + DOC_POSTING + TXT;
+
         try(
-                BufferedWriter bw = new BufferedWriter(new FileWriter(WORKING_DIRECTORY + DOC_POSTING + TXT))
+                BufferedWriter bw = new BufferedWriter(new FileWriter(path))
                 ){
             TreeMap<Integer, PostingDocData> sorted = new TreeMap<>(_docData);
 

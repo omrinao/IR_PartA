@@ -1,5 +1,6 @@
 package FileReading;
 
+import Indexing.IndexMerger;
 import Indexing.Indexer;
 import Indexing.TermData;
 import Parse.Parser;
@@ -23,13 +24,12 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
     private String _corpusPath;
     private String _originalPath;
     private BlockingQueue<Document> _documentsQueue;
-    private Parser _parser;
     private int _docNum;
 
 
     public ReadFile2(String path) {
         this._originalPath = path;
-        this._corpusPath = path + "\\corpus";
+        this._corpusPath = path;
         numOfDocRead = 0;
         numOfFilesRead = 0;
         _docNum = 0;
@@ -39,15 +39,13 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
         this._documentsQueue = queue;
     }
 
-    public void setParser (Parser p){this._parser = p;}
-
     /**
      * method to find and retrieve stop words
      * @return - hashset of stop words
      */
     public HashSet<String> getStopWords(){
         HashSet<String> toReturn = new HashSet<>();
-        File f = new File(_originalPath + "\\stop_words.txt");
+        File f = new File(_originalPath + "stop_words.txt");
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -221,7 +219,7 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        */
+
         try{
             ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\TermsDictionary"));
             HashMap<String, TermData> dict = (HashMap<String, TermData>) inputStream.readObject();
@@ -251,7 +249,10 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
         }catch (ClassNotFoundException f){
             System.out.println("object is not good " + f.getMessage());
 
-        }
+        }*/
+
+        IndexMerger im = new IndexMerger("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\", null, false);
+        im.filesCleanup();
     }
 
     /**
