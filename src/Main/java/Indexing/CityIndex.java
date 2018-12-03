@@ -12,20 +12,26 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 
 public class CityIndex {
+
+    // this object will hold only the information we need (capital, population, currency) from all the API
     public JsonElement m_JsonE;
 
     public CityIndex() {
         try {
-            OkHttpClient client = new OkHttpClient();
-            HttpUrl.Builder urlBuilder = HttpUrl.parse("https://restcountries.eu/rest/v2/all?fields=capital;name;population;currencies").newBuilder();
-            String url = urlBuilder.build().toString();
+
+            OkHttpClient okClient = new OkHttpClient();
+            HttpUrl.Builder httpURL = HttpUrl.parse("https://restcountries.eu/rest/v2/all?fields=capital;name;population;currencies").newBuilder();
+            String url = httpURL.build().toString();
             Request request = new Request.Builder().url(url).build();
-            Response response = client.newCall(request).execute();
+            Response response = okClient.newCall(request).execute();
             JsonParser parser = new JsonParser();
             m_JsonE = parser.parse(response.body().string());
         }
-        catch (UnknownHostException e){}
-        catch (IOException ex){}
+
+        catch (Exception e){
+
+        }
+
     }
 
 
@@ -67,13 +73,13 @@ public class CityIndex {
         return details;
     }
 
-   /* public static void main(String[] args) {
+    public static void main(String[] args) {
         CityIndex ci = new CityIndex();
-        String[] s = ci.getDetails("washington, d.c.");
+        String[] s = ci.getDetails("moscow");
         for (String g: s
              ) {
             System.out.println(g);
         }
     }
-    */
+
 }
