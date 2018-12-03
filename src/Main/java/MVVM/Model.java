@@ -100,9 +100,11 @@ public class Model extends Observable {
         long milis = total/1000000;
 
         String time = " Done! \n Total Time : " + milis/60000.00;
+        System.out.println(String.format("%s \nNumber of indexed docs: %s\n Number of different terms in the corpus: %s",
+                time, indexer.getNumOfIndexed(), indexer.getNumOfTerms()));
 
-        setChanged();
-        notifyObservers(time);
+        //setChanged();
+        //notifyObservers(time);
     }
 
 

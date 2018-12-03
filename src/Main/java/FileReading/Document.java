@@ -10,7 +10,6 @@ public class Document {
     TODO: make getters and setters and make some tests
       */
     private String m_docNum;
-    private String m_date;
     private String m_title;
     private String m_city;
     private String m_language;
@@ -35,7 +34,6 @@ public class Document {
         m_city = "";
         m_text = "";
         m_title = "";
-        m_date = "";
         m_isFinal = false;
         _startLine = start;
         _endLine = end;
@@ -94,10 +92,6 @@ public class Document {
 
         int startIdx = sub.indexOf("<DATE1>");
         int endIdx = sub.indexOf("</DATE1>");
-        if (startIdx!=-1 && endIdx!=-1 && startIdx<endIdx)
-            m_date = sub.substring(startIdx + 7,endIdx).trim();
-        else
-            m_date = "";
 
         startIdx = sub.indexOf("<TI>");
         endIdx = sub.indexOf("</TI>");
@@ -129,7 +123,17 @@ public class Document {
         return sub.indexOf("</F>");
     }
 
+    public int getMaxTF(){
+        int maxTF = 0;
+        for (ArrayList<Integer> list :
+                m_terms.values()){
+            if (list.size() > maxTF){
+                maxTF = list.size();
+            }
+        }
 
+        return maxTF;
+    }
 
     public void setFinal (boolean isLast){
         this.m_isFinal = isLast;
@@ -139,10 +143,6 @@ public class Document {
 
     public String getDocNum() {
         return m_docNum;
-    }
-
-    public String getDate() {
-        return m_date;
     }
 
     public String getTitle() {
@@ -182,6 +182,11 @@ public class Document {
         this.m_length = length;
     }
 
+    public short get_startLine(){return _startLine;}
+
+    public short get_endLine(){return _endLine;}
+
+    public String get_path(){return _path;}
 
 
 }

@@ -192,7 +192,7 @@ public class IndexMerger {
     private String arrangeFinalTerm(String curTerm, Comparator<? super String> comparator) {
 
         if (_termsQueue.peek() == null){ // no other terms in the queue case
-            return cutLineToTerm(curTerm);
+            return cutLineToTerm(curTerm) + "\n";
         }
 
         StringBuilder builder = new StringBuilder(cutLineToTerm(curTerm));
