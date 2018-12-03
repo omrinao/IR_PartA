@@ -73,13 +73,13 @@ public class CityIndex {
         return details;
     }
 
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         CityIndex ci = new CityIndex();
         String[] s = ci.getDetails("moscow");
         for (String g: s
              ) {
             System.out.println(g);
         }
-    }
+    }*/
 
 }
