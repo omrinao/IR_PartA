@@ -103,10 +103,10 @@ public class View implements Observer {
             String [] details = new String[2];
             details[0] = corpus.getText();
             details[1] = dictpost.getText();
+
             vm.reset(details);
             stemming.setSelected(false);
-            corpus.setText("");
-            dictpost.setText("");
+
         } catch (Exception e) {
 
         }

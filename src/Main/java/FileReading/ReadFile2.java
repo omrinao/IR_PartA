@@ -1,5 +1,6 @@
 package FileReading;
 
+import Indexing.IndexMerger;
 import Indexing.Indexer;
 import Indexing.TermData;
 import Parse.Parser;
@@ -8,8 +9,10 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.TreeMap;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -21,13 +24,12 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
     private String _corpusPath;
     private String _originalPath;
     private BlockingQueue<Document> _documentsQueue;
-    private Parser _parser;
     private int _docNum;
 
 
     public ReadFile2(String path) {
         this._originalPath = path;
-        this._corpusPath = path + "\\corpus";
+        this._corpusPath = path;
         numOfDocRead = 0;
         numOfFilesRead = 0;
         _docNum = 0;
@@ -37,15 +39,13 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
         this._documentsQueue = queue;
     }
 
-    public void setParser (Parser p){this._parser = p;}
-
     /**
      * method to find and retrieve stop words
      * @return - hashset of stop words
      */
     public HashSet<String> getStopWords(){
         HashSet<String> toReturn = new HashSet<>();
-        File f = new File(_originalPath + "\\stop_words.txt");
+        File f = new File(_originalPath + "stop_words.txt");
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -219,15 +219,22 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        */
+
         try{
             ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\TermsDictionary"));
             HashMap<String, TermData> dict = (HashMap<String, TermData>) inputStream.readObject();
             inputStream.close();
             RandomAccessFile file = new RandomAccessFile("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\FinalPosting.txt", "r" );
             BufferedWriter check = new BufferedWriter(new FileWriter("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output" + "\\posting_check.txt"));
+            TreeMap<String, TermData> sorted = new TreeMap<>(new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    return o1.compareToIgnoreCase(o2);
+                }
+            });
+            sorted.putAll(dict);
             for (String s :
-                    dict.keySet()){
+                    sorted.keySet()){
                 long pointer = dict.get(s).getM_pointer();
 
                 file.seek(pointer);
@@ -235,14 +242,17 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
                 check.write(termLine);
             }
 
-
+            check.close();
         }
         catch (IOException e){
             System.out.println("cant open file \n" + e.getMessage());
         }catch (ClassNotFoundException f){
             System.out.println("object is not good " + f.getMessage());
 
-        }
+        }*/
+
+        IndexMerger im = new IndexMerger("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\", null, false);
+        im.filesCleanup();
     }
 
     /**

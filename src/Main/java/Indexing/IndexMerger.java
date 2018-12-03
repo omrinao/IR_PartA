@@ -25,7 +25,7 @@ public class IndexMerger {
     long _postingPointer;
 
 
-    public IndexMerger(String working_dir, HashMap<String, TermData> _corpusDictionary) {
+    public IndexMerger(String working_dir, HashMap<String, TermData> _corpusDictionary, boolean stemming) {
         WORKING_DIR = working_dir;
         this._corpusDictionary = _corpusDictionary;
         _postingPointer = 0;
@@ -35,7 +35,12 @@ public class IndexMerger {
         _usedBufferesIdx = new ArrayList<>();
 
         try {
-            _postingWriter = new BufferedWriter(new PrintWriter(WORKING_DIR + FINAL_Posting + TXT));
+            if (stemming){
+                _postingWriter = new BufferedWriter(new PrintWriter(WORKING_DIR + FINAL_Posting + "STEMM" + TXT));
+            }
+            else {
+                _postingWriter = new BufferedWriter(new PrintWriter(WORKING_DIR + FINAL_Posting + TXT));
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -44,10 +49,10 @@ public class IndexMerger {
             @Override
             public int compare(String o1, String o2) {
 
-                int o1Idx = o1.indexOf(':');
+                int o1Idx = o1.indexOf("#~");
                 String o1Comparable = o1.substring(0, o1Idx);
 
-                int o2Idx = o2.indexOf(':');
+                int o2Idx = o2.indexOf("#~");
                 String o2Comparable = o2.substring(0, o2Idx);
 
                 return o1Comparable.compareToIgnoreCase(o2Comparable);
@@ -95,7 +100,8 @@ public class IndexMerger {
                 //System.out.println("Polled term: " + curTerm);
                 rememberBuffer(curTerm);
 
-                String origTerm = curTerm.substring(0, curTerm.indexOf(':'));
+                int termEnd = curTerm.indexOf("#~");
+                String origTerm = curTerm.substring(0, termEnd);
                 String toAddTerm = arrangeFinalTerm(curTerm, comparator);
 
                 if (_corpusDictionary.containsKey(origTerm.toLowerCase())){ // lower case exist!
@@ -113,13 +119,12 @@ public class IndexMerger {
 
                 properFillQueue();
 
-                String onlyATest = origTerm + ":" + toAddTerm;
+                String onlyATest = origTerm + "#~" + toAddTerm;
                 _postingPointer += onlyATest.getBytes().length;//(origTerm.length()+1);
                 _postingWriter.append(onlyATest);
                 //System.out.println("wrote term: " + onlyATest);
 
             }
-            //cutResources();
         }catch (IOException e){
 
             System.out.println("FAILED MERGING");
@@ -127,9 +132,35 @@ public class IndexMerger {
 
         finally {
             cutResources();
+            filesCleanup();
             System.out.println("finished merging. program should be over " + java.time.LocalTime.now());
         }
 
+    }
+
+    /**
+     * method to clean up all partial postings
+     */
+    public void filesCleanup() {
+        try (Stream<Path> paths = Files.walk(Paths.get(WORKING_DIR), 1)){
+            paths.filter(Files::isRegularFile).forEach(new Consumer<Path>() {
+                @Override
+                public void accept(Path path) {
+                    if (path.getName(path.getNameCount()-1).toString().startsWith("PartialPosting")) {
+
+                        try {
+                            Files.delete(path);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        //System.out.println(path);
+                    }
+                }
+            });
+        }catch (IOException e){
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -170,10 +201,6 @@ public class IndexMerger {
                 line += i;
                 _termsQueue.add(line);
             }
-            /* else {
-                // br.close();
-                // _postingReaders.remove(br);
-            }*/
         }catch (IOException e){
             System.out.println("Error at getting line!");
             System.out.println(e.getMessage());
@@ -242,7 +269,7 @@ public class IndexMerger {
      */
     private String cutLineToTerm(String line){
         int lastChar = line.lastIndexOf(',');
-        int firstChar = line.indexOf(':');
-        return line.substring(firstChar+1, lastChar+1);
+        int firstChar = line.indexOf("#~");
+        return line.substring(firstChar+2, lastChar+1);
     }
 }

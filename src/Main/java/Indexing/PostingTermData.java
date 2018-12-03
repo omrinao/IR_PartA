@@ -22,7 +22,7 @@ public class PostingTermData implements Comparable {
         if (locations.get(locations.size()-1) >= size*0.8){
             _locations[1] = 1;
         }else {
-            _locations[0] = 0;
+            _locations[1] = 0;
         }
 
     }
