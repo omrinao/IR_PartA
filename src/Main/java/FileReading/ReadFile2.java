@@ -151,16 +151,16 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
      */
 
     public static void main(String[] args){
-        long start = System.nanoTime();
+      /*  long start = System.nanoTime();
         System.out.println("Started");
 
         // initing classes
-        ReadFile2 read = new ReadFile2("C:\\Users\\omri\\Desktop");
+        ReadFile2 read = new ReadFile2("C:\\Users\\חגי קלינהוף\\Desktop\\שנה ג'\\סמסטר ה'\\אחזור מידע\\פרויקט מנוע\\Part 1 tests");
         //ReadFile2 read = new ReadFile2("C:\\Users\\חגי קלינהוף\\Desktop\\שנה ג'\\סמסטר ה'\\אחזור מידע\\פרויקט מנוע\\Part 1 tests");
         Parser p = new Parser();
         read.setParser(p);
         p.setStopWords(read.getStopWords());
-        Indexer i = new Indexer(1000);
+        Indexer i = new Indexer(1000, "C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output");
         p.setIndexer(i);
 
         // initing queues
@@ -208,24 +208,24 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
             System.out.println("Indexer Alive: " + indexer.isAlive());
         }
 
-        //TermData t = i._corpusDictionary.get("ARTHUR");
-        //long pointer = t.getM_pointer();
+        TermData t = i._corpusDictionary.get("settled");
+        long pointer = t.getM_pointer();
 
         try {
-            RandomAccessFile file = new RandomAccessFile(System.getProperty("user.dir") + "\\FinalPosting.txt", "r" );
-            //file.seek(pointer);
+            RandomAccessFile file = new RandomAccessFile("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output" + "\\FinalPosting.txt", "r" );
+            file.seek(pointer);
             String termLine = file.readLine();
             System.out.println(termLine);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        /*
+        */
         try{
-            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\IdeaProjects\\IR_PartA\\TermsDictionary"));
+            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\TermsDictionary"));
             HashMap<String, TermData> dict = (HashMap<String, TermData>) inputStream.readObject();
             inputStream.close();
-            RandomAccessFile file = new RandomAccessFile(System.getProperty("user.dir") + "\\FinalPosting.txt", "r" );
-            BufferedWriter check = new BufferedWriter(new FileWriter(System.getProperty("user.dir") + "\\posting_check.txt"));
+            RandomAccessFile file = new RandomAccessFile("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\FinalPosting.txt", "r" );
+            BufferedWriter check = new BufferedWriter(new FileWriter("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output" + "\\posting_check.txt"));
             for (String s :
                     dict.keySet()){
                 long pointer = dict.get(s).getM_pointer();
@@ -243,7 +243,6 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
             System.out.println("object is not good " + f.getMessage());
 
         }
-*/
     }
 
     /**
