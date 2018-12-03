@@ -1,24 +1,23 @@
 package MVVM;
 
 import Indexing.TermData;
-import javafx.application.Application;
-import javafx.beans.Observable;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Observer;
+import java.util.TreeSet;
 
 public class View implements Observer {
 
@@ -28,6 +27,10 @@ public class View implements Observer {
     public TextField corpus;
     public TextField dictpost;
     public CheckBox stemming;
+
+    public javafx.scene.control.ChoiceBox _languageChoice;
+    public ObservableList<String> _languagesList= FXCollections.observableArrayList();
+    public ListView listView;
 
 
     public void setVm(ViewModel vm) {
@@ -46,7 +49,7 @@ public class View implements Observer {
                     directoryChooser.showDialog(Main.pStage);
 
             if(selectedDirectory == null){
-                corpus.setText("No Directory selected");
+                corpus.setText("");
             }else{
                 corpus.setText(selectedDirectory.getAbsolutePath());
             }
@@ -67,7 +70,7 @@ public class View implements Observer {
                     directoryChooser.showDialog(Main.pStage);
 
             if(selectedDirectory == null){
-                dictpost.setText("No Directory selected");
+                dictpost.setText("");
             }else{
                 dictpost.setText(selectedDirectory.getAbsolutePath());
             }
@@ -87,9 +90,29 @@ public class View implements Observer {
             details[0] = String.valueOf(stemming.isSelected());
             details[1] = corpus.getText();
             details[2] = dictpost.getText();
-            vm.execute(details);
-        } catch (Exception e) {
+            if ( details[1] == null||details[1].isEmpty()
+                     ||
+                    details[0]==null || details[0].isEmpty()){
+                popProblem("Please specify both:\nCorpus directory\nWriting path");
+                return;
+            }
 
+            vm.execute(details);
+            HashSet<String> languagesFound = vm.getLanguages();
+            if (languagesFound!=null){
+                TreeSet<String> sorted = new TreeSet<>(languagesFound);
+                for (String s:
+                        sorted){
+                    if (!s.matches(".*\\d+.*")){
+                        _languagesList.add(s);
+                    }
+                }
+                _languageChoice.setItems(_languagesList);
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

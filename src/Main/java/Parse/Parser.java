@@ -59,6 +59,7 @@ public class Parser implements Runnable{
                     System.out.println("Parse: Parsing is DONE, send to Indexing");
                     break;
                 }
+                d.setLanguage(removePeriod(d.getLanguage()));
                 String allText = d.getText();
                 if (allText == null || allText.isEmpty())
                     continue;
@@ -208,14 +209,14 @@ public class Parser implements Runnable{
                                                 i = i + 1;
                                             }
                                         } else {
-                                            finalTerm = isNumber(i, words); // do not advance idx
+                                            finalTerm = isNumber2(i, words, word); // do not advance idx
                                         }
                                     }
                                 } else {
                                     finalTerm = isNumber2(i, words, word);
                                 }
                             } else
-                                finalTerm = isNumber(i, words);
+                                finalTerm = isNumber2(i, words, word);
                         } else if (word.contains("-")) {
                             // first arg is word. need to check if second arg is number
                             String[] split3 = word.split("-");

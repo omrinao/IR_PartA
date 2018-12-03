@@ -1,5 +1,6 @@
 package MVVM;
 
+import java.util.HashSet;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -42,5 +43,9 @@ public class ViewModel extends Observable implements Observer {
             setChanged();
             notifyObservers(arg);
         }
+    }
+
+    public HashSet<String> getLanguages() {
+        return _model.getLanguages();
     }
 }

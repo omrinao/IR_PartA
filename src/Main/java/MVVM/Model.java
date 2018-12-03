@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Observable;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
@@ -26,6 +27,7 @@ public class Model extends Observable {
     private String _corpusPath;
     private String _writeTo;
     private HashMap<String, TermData> _loadedDict;
+    private HashSet<String> _languagesFound;
 
 
     public Model(){
@@ -40,11 +42,8 @@ public class Model extends Observable {
     public void execute(String[] details) {
         _corpusPath = details[1] + "\\";
         _writeTo = details[2] + "\\";
-        Thread t = new Thread(() -> startPartA(details[0], details[1], details[2]));
-        t.start();
+        startPartA(details[0], details[1], details[2]);
 
-        setChanged();
-        notifyObservers("Processing has began!");
     }
 
 
@@ -64,7 +63,7 @@ public class Model extends Observable {
         // --------- initing working classes ----------
         ReadFile2 reader = new ReadFile2(_corpusPath);
         Parser parser = new Parser();
-        Indexer indexer = new Indexer(600, _writeTo);
+        Indexer indexer = new Indexer(4000, _writeTo);
 
         // --------- setting Read File ----------
         reader.setQueue(beforeParse);
@@ -96,17 +95,20 @@ public class Model extends Observable {
             e.printStackTrace();
         }
 
+        _languagesFound = indexer.get_docLanguages();
 
         long end = System.nanoTime();
         long total = end-start;
         long milis = total/1000000;
 
-        String time = "Done! \nTotal Time : " + milis/60000.00;
-        System.out.println(String.format("%s \nNumber of indexed docs: %s\nNumber of different terms in the corpus: %s",
-                time, indexer.getNumOfIndexed(), indexer.getNumOfTerms()));
+        String time = "Done! \nTotal Time : " + milis/1000.00 + " Seconds" +
+                "" +
+                "";
+        String results = String.format("%s \nNumber of indexed docs: %s\nNumber of different terms in the corpus: %s",
+                time, indexer.getNumOfIndexed(), indexer.getNumOfTerms());
 
-        //setChanged();
-        //notifyObservers(time);
+        setChanged();
+        notifyObservers(results);
     }
 
 
@@ -126,7 +128,6 @@ public class Model extends Observable {
             notifyObservers("Please specify an exact folder to reset files.");
             return;
         }
-
 
         try (Stream<Path> paths = Files.walk(Paths.get(removeFrom), 1)){
             paths.filter(Files::isRegularFile).forEach(new Consumer<Path>() {
@@ -150,8 +151,9 @@ public class Model extends Observable {
             notifyObservers("Error while reseting the folder: " + e.getMessage());
         }
 
-
-
+        finally {
+            System.gc();
+        }
     }
 
 
@@ -210,5 +212,9 @@ public class Model extends Observable {
     public void showDict(String stemming) {
         //displaying dictionary
         System.out.println("check showdict");
+    }
+
+    public HashSet<String> getLanguages() {
+        return _languagesFound;
     }
 }
