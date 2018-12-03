@@ -313,7 +313,7 @@ public class Indexer implements Runnable {
      * @return string representing the posting of the given term
      */
     private String createPostingTerm(String termEntry, TreeSet<PostingTermData> treeSet) {
-        StringBuilder toReturn = new StringBuilder(termEntry + ":");
+        StringBuilder toReturn = new StringBuilder(termEntry + "#~");
 
         for (PostingTermData termData : treeSet){
             toReturn.append(termData._doc).append(" "); // writing doc num

@@ -44,10 +44,10 @@ public class IndexMerger {
             @Override
             public int compare(String o1, String o2) {
 
-                int o1Idx = o1.indexOf(':');
+                int o1Idx = o1.indexOf("#~");
                 String o1Comparable = o1.substring(0, o1Idx);
 
-                int o2Idx = o2.indexOf(':');
+                int o2Idx = o2.indexOf("#~");
                 String o2Comparable = o2.substring(0, o2Idx);
 
                 return o1Comparable.compareToIgnoreCase(o2Comparable);
@@ -95,7 +95,8 @@ public class IndexMerger {
                 //System.out.println("Polled term: " + curTerm);
                 rememberBuffer(curTerm);
 
-                String origTerm = curTerm.substring(0, curTerm.indexOf(':'));
+                int termEnd = curTerm.indexOf("#~");
+                String origTerm = curTerm.substring(0, termEnd);
                 String toAddTerm = arrangeFinalTerm(curTerm, comparator);
 
                 if (_corpusDictionary.containsKey(origTerm.toLowerCase())){ // lower case exist!
@@ -113,7 +114,7 @@ public class IndexMerger {
 
                 properFillQueue();
 
-                String onlyATest = origTerm + ":" + toAddTerm;
+                String onlyATest = origTerm + "#~" + toAddTerm;
                 _postingPointer += onlyATest.getBytes().length;//(origTerm.length()+1);
                 _postingWriter.append(onlyATest);
                 //System.out.println("wrote term: " + onlyATest);
@@ -170,10 +171,6 @@ public class IndexMerger {
                 line += i;
                 _termsQueue.add(line);
             }
-            /* else {
-                // br.close();
-                // _postingReaders.remove(br);
-            }*/
         }catch (IOException e){
             System.out.println("Error at getting line!");
             System.out.println(e.getMessage());
@@ -242,7 +239,7 @@ public class IndexMerger {
      */
     private String cutLineToTerm(String line){
         int lastChar = line.lastIndexOf(',');
-        int firstChar = line.indexOf(':');
-        return line.substring(firstChar+1, lastChar+1);
+        int firstChar = line.indexOf("#~");
+        return line.substring(firstChar+2, lastChar+1);
     }
 }

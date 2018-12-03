@@ -8,8 +8,10 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.TreeMap;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -226,8 +228,15 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
             inputStream.close();
             RandomAccessFile file = new RandomAccessFile("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\FinalPosting.txt", "r" );
             BufferedWriter check = new BufferedWriter(new FileWriter("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output" + "\\posting_check.txt"));
+            TreeMap<String, TermData> sorted = new TreeMap<>(new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    return o1.compareToIgnoreCase(o2);
+                }
+            });
+            sorted.putAll(dict);
             for (String s :
-                    dict.keySet()){
+                    sorted.keySet()){
                 long pointer = dict.get(s).getM_pointer();
 
                 file.seek(pointer);
@@ -235,7 +244,7 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
                 check.write(termLine);
             }
 
-
+            check.close();
         }
         catch (IOException e){
             System.out.println("cant open file \n" + e.getMessage());

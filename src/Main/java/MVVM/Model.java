@@ -59,7 +59,7 @@ public class Model extends Observable {
         // --------- initing working classes ----------
         ReadFile2 reader = new ReadFile2(corpusPath);
         Parser parser = new Parser();
-        Indexer indexer = new Indexer(4000, writingPath);
+        Indexer indexer = new Indexer(600, writingPath);
 
         // --------- setting Read File ----------
         reader.setQueue(beforeParse);
@@ -99,8 +99,8 @@ public class Model extends Observable {
         long total = end-start;
         long milis = total/1000000;
 
-        String time = " Done! \n Total Time : " + milis/60000.00;
-        System.out.println(String.format("%s \nNumber of indexed docs: %s\n Number of different terms in the corpus: %s",
+        String time = "Done! \nTotal Time : " + milis/60000.00;
+        System.out.println(String.format("%s \nNumber of indexed docs: %s\nNumber of different terms in the corpus: %s",
                 time, indexer.getNumOfIndexed(), indexer.getNumOfTerms()));
 
         //setChanged();
