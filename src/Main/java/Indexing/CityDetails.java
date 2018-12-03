@@ -1,9 +1,10 @@
 package Indexing;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class CityDetails {
+public class CityDetails implements Serializable {
     private String m_country;
     private String m_currency;
     private String m_population;

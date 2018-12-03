@@ -10,7 +10,7 @@ import java.util.concurrent.BlockingQueue;
 public class Parser implements Runnable{
 
     private final List<String> m_badAffix = Arrays.asList("?", ":", "--", ".", ";", "{", "}", "[", "]", "(", ")", "=", "+", "`",
-            "'", "\"", "!", "*", "~", "<", ">", "@");
+            "'", "\"", "!", "*", "~", "<", ">", "@", "&", "/", "|", "\\");
     private HashSet<String> m_stopWords;
     public int parsedDoc;
     private BlockingQueue<Document> _beforeParse;
@@ -77,10 +77,10 @@ public class Parser implements Runnable{
                         boolean monthFix = false;
 
                         word = removePeriod(word);
-                        /* this could be an extra rule
+                        /* this could be an extra rule */
                         if (word.toLowerCase().endsWith("'s")){
                             word = word.substring(0, word.length()-2);
-                        }*/
+                        }
                         if (word.isEmpty())
                             continue;
 
@@ -90,7 +90,7 @@ public class Parser implements Runnable{
                             if (i + 1 <= finalIdx && priceOrNum(removePeriod(words[i + 1])))
                                 i++;
                         } else if (word.contains("%"))
-                            finalTerm = isPercentage(i, words);
+                            finalTerm = isPercentage(i, words, word);
 
                         else if (word.toLowerCase().equals("between") && i + 3 <= finalIdx) {
                             if (isNumericValue(words[i + 1])) {
@@ -171,16 +171,16 @@ public class Parser implements Runnable{
                                                 finalTerm = isPrice(i, words);
                                                 i = i + 3;
                                             } else {
-                                                finalTerm = isNumber(i, words);
+                                                finalTerm = isNumber2(i, words, word);
                                                 i = i + 1;
                                             }
 
                                         } else { // word3 is anything else
-                                            finalTerm = isNumber(i, words);
+                                            finalTerm = isNumber2(i, words, word);
                                             i = i + 1;
                                         }
                                     } else { // does not have 3rd word
-                                        finalTerm = isNumber(i, words);
+                                        finalTerm = isNumber2(i, words, word);
                                         i = i + 1;
                                     }
                                 } else if (word2.contains("-")) { // it's range
@@ -212,7 +212,7 @@ public class Parser implements Runnable{
                                         }
                                     }
                                 } else {
-                                    finalTerm = isNumber(i, words);
+                                    finalTerm = isNumber2(i, words, word);
                                 }
                             } else
                                 finalTerm = isNumber(i, words);
@@ -258,7 +258,7 @@ public class Parser implements Runnable{
 
                         if (finalTerm == null || monthFix) {
                             finalTerm = removePeriod(word);
-                            if (finalTerm.isEmpty()){
+                            if (finalTerm.isEmpty() || finalTerm.length()==1){
                                 continue;
                             }
                             wordInsert = true;
@@ -310,6 +310,11 @@ public class Parser implements Runnable{
                         }
 
                         if (!wordInsert && finalTerm != null) {
+                            finalTerm = removePeriod(finalTerm);
+                            if (finalTerm.isEmpty() || finalTerm.length()==1){
+                                continue;
+                            }
+
                             if (toInsert.containsKey(finalTerm)) {
                                 toInsert.get(finalTerm).add(location.get_value());
                                 location.increase();
@@ -694,18 +699,17 @@ public class Parser implements Runnable{
      * @param text - the entire text
      * @return - the idx of the final word observed
      */
-    private String isPercentage (int idx, String[] text){
+    private String isPercentage (int idx, String[] text, String word){
         String valueToReturn = "";
         try {
-            String firstWord = removePeriod(text[idx]);
-            if (firstWord.contains("%")){
-                valueToReturn = firstWord;
+            if (word.contains("%")){
+                valueToReturn = word;
             }
             else if (idx + 1 < text.length){// case of percent/percentage after a number
                 String nextWord = removePeriod(text[idx + 1].toLowerCase());
 
                 if ("percent".equals(nextWord) || "percentage".equals(nextWord)) {
-                    valueToReturn = firstWord + "%";
+                    valueToReturn = word + "%";
                 }
             }
 
@@ -820,6 +824,109 @@ public class Parser implements Runnable{
 
         return valueToReturn;
     }
+
+
+    /**
+     * a method that turns a classified number into a term
+     * @param idx - the idx of the starting number
+     * @param text - the entire text
+     * @return - the idx of the final word observed
+     */
+    private String isNumber2 (int idx, String[] text, String word){
+        String valueToReturn = "";
+        try {
+            float value = Float.valueOf(word);
+            int val = 0;
+            boolean isInt = false;
+            String nextWord = "";
+            if (idx + 1 < text.length)
+                nextWord = text[idx+1].toLowerCase();
+            //calculate the true value according to the next word that comes after the number
+            if ("thousand".equals(nextWord))
+                value = value * 1000;
+
+            else if ("million".equals(nextWord))
+                value = value * 1000000;
+
+            else if ("billion".equals(nextWord))
+                value *= 1000000000;
+
+            else if ("trillion".equals(nextWord)) {
+                value *= 1000000000;
+                value *= 1000;
+            }
+
+            if (value < 1000 && value > -1000){
+                //check if is float or int
+                val = (int)value;
+                if (val == value)
+                    isInt = true;
+
+                if(isInt) {
+                    if (nextWord.contains("/")) { //fraction case
+                        valueToReturn = val + " " + nextWord;
+                        idx++;
+                    } else {
+                        valueToReturn = "" + val;
+                    }
+                }
+                else{
+                    if (nextWord.contains("/")) {
+                        valueToReturn = value + " " + nextWord;
+                        idx++;
+                    } else {
+                        valueToReturn = "" + value;
+                    }
+                }
+            }
+            else if (value < 1000000 && value > -1000000){
+                value = value / 1000;
+                val = (int)value;
+                if (val == value)
+                    isInt = true;
+                if(isInt) {
+                    valueToReturn = "" + val + "K";
+                }
+                else{
+                    valueToReturn = "" + value + "K";
+                }
+            }
+            else if (value < 1000000000 && value>-1000000000){
+                value = value / 1000000;
+                val = (int)value;
+                if (val == value)
+                    isInt = true;
+                if (isInt) {
+                    valueToReturn = "" + val + "M";
+                }
+                else{
+                    valueToReturn = "" + value + "M";
+                }
+            }
+            else{
+                value = value / 1000000000;
+                val = (int)value;
+                if (val == value)
+                    isInt = true;
+                if (isInt) {
+                    valueToReturn = "" + val + "B";
+                }
+                else {
+                    valueToReturn = "" + value + "B";
+                }
+            }
+
+        }catch (NumberFormatException e){
+            e.printStackTrace();
+            System.out.println("Error: given string: {" + text[idx] + "} is not a number (float)");
+        }catch (Exception e){
+            e.printStackTrace();
+            System.out.println("Error: unknown error. Word: {" + text[idx] + "}");
+        }
+
+        return valueToReturn;
+    }
+
 
     /**
      * a method to cut special characters at the end and start of a given string if exist

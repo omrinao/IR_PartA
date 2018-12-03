@@ -16,6 +16,7 @@ public class Indexer implements Runnable {
 
     private final String PARTIAL_POSTING = "PartialPosting";
     private final String TXT = ".txt";
+    private final String DOC_POSTING = "DocumentPosting";
     private final String WORKING_DIRECTORY;
     private final String STEMMER = "STEM";
 
@@ -25,6 +26,8 @@ public class Indexer implements Runnable {
 
     private CityIndex _cityIndex;                            // instance of the city API, contains all API relevant details
     private HashMap <String, CityDetails> _cityDictionary;
+
+    private HashMap<Integer, PostingDocData> _docData;       // structure for docs posting data
 
 
 
@@ -43,6 +46,8 @@ public class Indexer implements Runnable {
         //this._upperPartialPosting = new TreeMap<>();
         this._cityIndex = new CityIndex();
         this._cityDictionary = new HashMap<>();
+
+        _docData = new HashMap<>();
     }
 
 
@@ -160,6 +165,9 @@ public class Indexer implements Runnable {
                     }
                 }
 
+                _docData.put(Integer.valueOf(d.getDocNum()),
+                        new PostingDocData(d.getMaxTF(), docTerms.size(), d.get_startLine(), d.get_endLine(), d.get_path()));
+
                 m_docsIndexed++; // needed for work report
                 partialIndexed++;
 
@@ -187,6 +195,7 @@ public class Indexer implements Runnable {
         //TreeMap<String, TermData> sorted = new TreeMap<>(_corpusDictionary);
 
         writeDictionary();
+        writeCityDictionary();
         System.out.println("Exiting Indexer");
     }
 
@@ -209,6 +218,16 @@ public class Indexer implements Runnable {
         }
     }
 
+    private void writeCityDictionary(){
+        String path = WORKING_DIRECTORY + "CityDicionary";
+
+        try(ObjectOutputStream write = new ObjectOutputStream(new FileOutputStream(path));) {
+            write.writeObject(_cityDictionary);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * a method to write partial posting once needed
@@ -225,6 +244,9 @@ public class Indexer implements Runnable {
         try {
             if (!_partialPosting.isEmpty())
                 writePartialPosting(partialName);
+            if (!_docData.isEmpty()){
+                writeToDocPosting();
+            }
         }
         catch (IOException e){
             /* do something here */
@@ -232,6 +254,24 @@ public class Indexer implements Runnable {
 
         _partialPostingCount++;
         _partialPosting.clear(); // maybe clear
+    }
+
+    /**
+     * method to write to doc posting
+     * @throws IOException - if error occured duric writing
+     */
+    private void writeToDocPosting()  throws IOException{
+        try(
+                BufferedWriter bw = new BufferedWriter(new FileWriter(WORKING_DIRECTORY + DOC_POSTING + TXT))
+                ){
+            TreeMap<Integer, PostingDocData> sorted = new TreeMap<>(_docData);
+
+            for (Integer docNum :
+                    sorted.keySet()) {
+                PostingDocData cur = sorted.get(docNum);
+                bw.append(String.format("%s\n", cur.toString()));
+            }
+        }
     }
 
 
@@ -319,4 +359,8 @@ public class Indexer implements Runnable {
     public void setStemmer(boolean stem){
         this._stemmer = stem;
     }
+
+    public int getNumOfIndexed(){return m_docsIndexed;}
+
+    public int getNumOfTerms(){return _corpusDictionary.size();}
 }
