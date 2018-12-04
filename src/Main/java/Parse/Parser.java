@@ -774,7 +774,7 @@ public class Parser implements Runnable{
                         valueToReturn = value + " " + nextWord;
                         idx++;
                     } else {
-                        valueToReturn = "" + value;
+                        valueToReturn = "" + String.format("%.2f", value);
                     }
                 }
             }
@@ -787,7 +787,7 @@ public class Parser implements Runnable{
                     valueToReturn = "" + val + "K";
                 }
                 else{
-                    valueToReturn = "" + value + "K";
+                    valueToReturn = "" + String.format("%.2f", value) + "K";
                 }
             }
             else if (value < 1000000000 && value>-1000000000){
@@ -799,7 +799,7 @@ public class Parser implements Runnable{
                     valueToReturn = "" + val + "M";
                 }
                 else{
-                    valueToReturn = "" + value + "M";
+                    valueToReturn = "" + String.format("%.2f", value) + "M";
                 }
             }
             else{
@@ -876,7 +876,7 @@ public class Parser implements Runnable{
                         valueToReturn = value + " " + nextWord;
                         idx++;
                     } else {
-                        valueToReturn = "" + value;
+                        valueToReturn = "" + String.format("%.2f", value);
                     }
                 }
             }
@@ -889,7 +889,7 @@ public class Parser implements Runnable{
                     valueToReturn = "" + val + "K";
                 }
                 else{
-                    valueToReturn = "" + value + "K";
+                    valueToReturn = "" + String.format("%.2f", value) + "K";
                 }
             }
             else if (value < 1000000000 && value>-1000000000){
@@ -901,7 +901,7 @@ public class Parser implements Runnable{
                     valueToReturn = "" + val + "M";
                 }
                 else{
-                    valueToReturn = "" + value + "M";
+                    valueToReturn = "" + String.format("%.2f", value) + "M";
                 }
             }
             else{
