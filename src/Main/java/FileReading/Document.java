@@ -38,6 +38,7 @@ public class Document {
         _startLine = start;
         _endLine = end;
         m_docNum = "" + id;
+        m_language = "";
         _path = path;
 
         int textTag = fullDoc.indexOf("<TEXT>");
@@ -61,11 +62,15 @@ public class Document {
      */
     private void extractText(String substring) {
         int start = substring.indexOf("<F P=105>");
-        int end = substring.indexOf("</F>");
+        int end = substring.indexOf("</F P=105>");
+        if (start != -1 && start>end)
+            end = start + findFTag(substring.substring(start));
+
         if (start!=-1 &&
                 end!=-1 &&
                 start < end){
             m_language = substring.substring(start+8, end);
+            m_language= m_language.replaceAll("\\s+", "");
         }
 
         if (end != -1){
@@ -110,6 +115,19 @@ public class Document {
             String cityVal = sub.substring(startIdx + 9, endIdx).trim();
             String[] parsedCities = cityVal.split("\\s+");
             m_city = parsedCities[0];
+        }
+
+        startIdx = sub.indexOf("<F P=105>");
+        endIdx = sub.indexOf("</F");
+        if (startIdx!=-1 && startIdx>endIdx)
+            endIdx = startIdx + findFTag(sub.substring(startIdx));
+
+        if (m_language.isEmpty() &&
+                startIdx!=-1 &&
+                endIdx!=-1 &&
+                startIdx < endIdx){
+            m_language = sub.substring(startIdx+9, endIdx);
+            m_language = m_language.replaceAll("\\s+", "");
         }
 
     }
@@ -187,6 +205,8 @@ public class Document {
     public short get_endLine(){return _endLine;}
 
     public String get_path(){return _path;}
+
+    public void setLanguage(String lenguange){this.m_language = lenguange;}
 
 
 }

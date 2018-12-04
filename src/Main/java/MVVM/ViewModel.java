@@ -1,5 +1,9 @@
 package MVVM;
 
+import Indexing.TermData;
+
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -19,8 +23,8 @@ public class ViewModel extends Observable implements Observer {
         _model.reset(details);
     }
 
-    public void loadDict(String stemming) {
-        _model.loadDict(stemming);
+    public void loadDict(String[] args) {
+        _model.loadDict(args);
     }
 
     public void showDict(String stemming) {
@@ -42,5 +46,13 @@ public class ViewModel extends Observable implements Observer {
             setChanged();
             notifyObservers(arg);
         }
+    }
+
+    public HashSet<String> getLanguages() {
+        return _model.getLanguages();
+    }
+
+    public HashMap<String, TermData> getTermDict(String stem, String path) {
+        return _model.getTermDict(stem, path);
     }
 }

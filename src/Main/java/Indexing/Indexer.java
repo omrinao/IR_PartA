@@ -28,6 +28,7 @@ public class Indexer implements Runnable {
     private HashMap <String, CityDetails> _cityDictionary;
 
     private HashMap<Integer, PostingDocData> _docData;       // structure for docs posting data
+    private HashSet<String> _docLanguages;                  // structure for docs languages
 
     public Indexer(int docsPerPartialPosting, String writingLocation) {
         this.WORKING_DIRECTORY = writingLocation;
@@ -37,14 +38,12 @@ public class Indexer implements Runnable {
         this._partialPostingCount = 0;
 
         this._corpusDictionary = new HashMap<>();
-        //this._upperCaseDictionary = new HashMap<>();
-
         this._partialPosting = new HashMap<>();
-        //this._upperPartialPosting = new TreeMap<>();
         this._cityIndex = new CityIndex();
         this._cityDictionary = new HashMap<>();
 
         _docData = new HashMap<>();
+        _docLanguages = new HashSet<>();
     }
 
 
@@ -166,6 +165,10 @@ public class Indexer implements Runnable {
                 _docData.put(Integer.valueOf(d.getDocNum()),
                         new PostingDocData(d.getMaxTF(), docTerms.size(), d.get_startLine(), d.get_endLine(), d.get_path()));
 
+                if (!d.getLanguage().isEmpty()){
+                    _docLanguages.add(d.getLanguage());
+                }
+
                 m_docsIndexed++; // needed for work report
                 partialIndexed++;
 
@@ -194,7 +197,21 @@ public class Indexer implements Runnable {
 
         writeDictionary();
         writeCityDictionary();
+        writeLanguagesSet();
         System.out.println("Exiting Indexer");
+    }
+
+    private void writeLanguagesSet() {
+        if (_docLanguages.isEmpty()){
+            return;
+        }
+        String path = WORKING_DIRECTORY + "LanguagesSet";
+        try(ObjectOutputStream write = new ObjectOutputStream(new FileOutputStream(path));) {
+            write.writeObject(_corpusDictionary);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -397,4 +414,6 @@ public class Indexer implements Runnable {
     public int getNumOfIndexed(){return m_docsIndexed;}
 
     public int getNumOfTerms(){return _corpusDictionary.size();}
+
+    public HashSet<String> get_docLanguages(){return _docLanguages;}
 }

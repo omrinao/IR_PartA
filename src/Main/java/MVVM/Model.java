@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Observable;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
@@ -22,14 +23,15 @@ import java.util.stream.Stream;
 
 public class Model extends Observable {
 
-    private ThreadPoolExecutor _threads;
+//    private ThreadPoolExecutor _threads;
     private String _corpusPath;
     private String _writeTo;
     private HashMap<String, TermData> _loadedDict;
+    private HashSet<String> _languagesFound;
 
 
     public Model(){
-        this._threads = (ThreadPoolExecutor)Executors.newCachedThreadPool();
+
     }
 
 
@@ -40,21 +42,16 @@ public class Model extends Observable {
     public void execute(String[] details) {
         _corpusPath = details[1] + "\\";
         _writeTo = details[2] + "\\";
-        Thread t = new Thread(() -> startPartA(details[0], details[1], details[2]));
-        t.start();
+        startPartA(details[0]);
 
-        setChanged();
-        notifyObservers("Processing has began!");
     }
 
 
     /**
      * method to start the entire process of part A
      * @param stemming - if stemming is needed
-     * @param corpusPath - path of the corpus
-     * @param writingPath - path of where to write
      */
-    private void startPartA(String stemming, String corpusPath, String writingPath){
+    private void startPartA(String stemming){
         boolean stem = Boolean.valueOf(stemming);
 
         // --------- initing blocking queues ----------
@@ -64,7 +61,7 @@ public class Model extends Observable {
         // --------- initing working classes ----------
         ReadFile2 reader = new ReadFile2(_corpusPath);
         Parser parser = new Parser();
-        Indexer indexer = new Indexer(600, _writeTo);
+        Indexer indexer = new Indexer(4000, _writeTo);
 
         // --------- setting Read File ----------
         reader.setQueue(beforeParse);
@@ -82,7 +79,8 @@ public class Model extends Observable {
         // ----------- initing threads ----------
         long start = System.nanoTime();
 
-        Future<HashMap<Path, Exception>> problems = _threads.submit(reader);
+        Thread tReader = new Thread(reader);
+        tReader.start();
         Thread tParser = new Thread(parser);
         tParser.start();
         Thread tIndexer = new Thread(indexer);
@@ -90,23 +88,26 @@ public class Model extends Observable {
 
         HashMap<Path, Exception> m = null;
         try {
-            m = problems.get();
             tIndexer.join();
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
+        _languagesFound = indexer.get_docLanguages();
+        _loadedDict = indexer._corpusDictionary;
 
         long end = System.nanoTime();
         long total = end-start;
         long milis = total/1000000;
 
-        String time = "Done! \nTotal Time : " + milis/60000.00;
-        System.out.println(String.format("%s \nNumber of indexed docs: %s\nNumber of different terms in the corpus: %s",
-                time, indexer.getNumOfIndexed(), indexer.getNumOfTerms()));
+        String time = "Done! \nTotal Time : " + milis/1000.00 + " Seconds" +
+                "" +
+                "";
+        String results = String.format("%s \nNumber of indexed docs: %s\nNumber of different terms in the corpus: %s",
+                time, indexer.getNumOfIndexed(), indexer.getNumOfTerms());
 
-        //setChanged();
-        //notifyObservers(time);
+        setChanged();
+        notifyObservers(results);
     }
 
 
@@ -117,16 +118,15 @@ public class Model extends Observable {
      */
     public void reset(String[] details) {
         String removeFrom = null;
-        if (_writeTo == null || _writeTo.isEmpty()){
-            removeFrom = details[1];
-        }else if (!details[1].isEmpty()) {
+        if (_writeTo != null || !_writeTo.isEmpty()){
             removeFrom = _writeTo;
+        }else if (!details[1].isEmpty()) {
+            removeFrom = details[1] + "\\";
         }else {
             setChanged();
             notifyObservers("Please specify an exact folder to reset files.");
             return;
         }
-
 
         try (Stream<Path> paths = Files.walk(Paths.get(removeFrom), 1)){
             paths.filter(Files::isRegularFile).forEach(new Consumer<Path>() {
@@ -150,26 +150,40 @@ public class Model extends Observable {
             notifyObservers("Error while reseting the folder: " + e.getMessage());
         }
 
-
-
+        finally {
+            System.gc();
+        }
     }
 
 
     /**
      * method to load the dictionary from the path
-     * @param stemming - load args
+     * @param details - load args
      */
-    public void loadDict(String stemming) {
+    public void loadDict(String[] details) {
+        String stemming = details[0];
+        String loadFrom = null;
+
+        if (_writeTo != null && !_writeTo.isEmpty()){
+            loadFrom = _writeTo;
+        }
+        else if (details[1] != null && !details[1].isEmpty()){
+            loadFrom = details[1] + "\\";
+        }
+        else {
+            setChanged();
+            notifyObservers("Error!\n" + "Please specify a directory of a proper dictionary" );
+            return;
+        }
 
         if (Boolean.valueOf(stemming)){
             try {
-                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(_writeTo + "STEMTermsDictionary"));
-                HashMap<String, TermData> dict = (HashMap<String, TermData>) inputStream.readObject();
-                _loadedDict = dict;
+                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(loadFrom + "STEMTermsDictionary"));
+                _loadedDict = (HashMap<String, TermData>) inputStream.readObject();
                 inputStream.close();
 
                 setChanged();
-                notifyObservers("Dictionary without stemming loaded!");
+                notifyObservers("Dictionary with stemming loaded!");
 
             }catch (IOException e ){
                 setChanged();
@@ -183,12 +197,12 @@ public class Model extends Observable {
 
         else {
             try {
-                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(_writeTo + "TermsDictionary"));
-                HashMap<String, TermData> dict = (HashMap<String, TermData>) inputStream.readObject();
+                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(loadFrom + "TermsDictionary"));
+                _loadedDict = (HashMap<String, TermData>) inputStream.readObject();
                 inputStream.close();
 
                 setChanged();
-                notifyObservers("Dictionary with stemming loaded!");
+                notifyObservers("Dictionary without stemming loaded!");
 
             } catch (IOException e) {
                 setChanged();
@@ -210,5 +224,13 @@ public class Model extends Observable {
     public void showDict(String stemming) {
         //displaying dictionary
         System.out.println("check showdict");
+    }
+
+    public HashSet<String> getLanguages() {
+        return _languagesFound;
+    }
+
+    public HashMap<String, TermData> getTermDict(String stem, String path) {
+        return _loadedDict;
     }
 }

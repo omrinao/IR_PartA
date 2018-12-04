@@ -6,7 +6,7 @@ public class TermData implements Serializable {
 
     int m_df;
     float m_idf;
-    float m_totalTF;
+    int m_totalTF;
 
     long m_pointer;
 
@@ -18,7 +18,7 @@ public class TermData implements Serializable {
         return m_idf;
     }
 
-    public float getM_totalTF() {
+    public int getM_totalTF() {
         return m_totalTF;
     }
 
@@ -26,7 +26,7 @@ public class TermData implements Serializable {
         return m_pointer;
     }
 
-    public TermData(int m_df, float m_totalTF) {
+    public TermData(int m_df, int m_totalTF) {
         this.m_df = m_df;
         this.m_totalTF = m_totalTF;
     }

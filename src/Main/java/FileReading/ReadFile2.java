@@ -17,7 +17,7 @@ import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
+public class ReadFile2 implements Runnable {
 
     public int numOfFilesRead;
     public int numOfDocRead;
@@ -262,7 +262,7 @@ public class ReadFile2 implements Callable<HashMap<Path, Exception>> {
      * @throws Exception if unable to compute a result
      */
     @Override
-    public HashMap<Path, Exception> call() throws Exception {
-        return getDocuments();
+    public void run () {
+        getDocuments();
     }
 }
