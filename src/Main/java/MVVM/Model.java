@@ -99,9 +99,7 @@ public class Model extends Observable {
         long total = end-start;
         long milis = total/1000000;
 
-        String time = "Done! \nTotal Time : " + milis/1000.00 + " Seconds" +
-                "" +
-                "";
+        String time = "Done! \nTotal Time : " + milis/1000.00 + " Seconds";
         String results = String.format("%s \nNumber of indexed docs: %s\nNumber of different terms in the corpus: %s",
                 time, indexer.getNumOfIndexed(), indexer.getNumOfTerms());
 

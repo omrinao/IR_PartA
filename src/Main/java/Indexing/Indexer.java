@@ -80,7 +80,7 @@ public class Indexer implements Runnable {
                             toLowerTerm.m_df += 1;
                             toLowerTerm.m_totalTF += docTerms.get(term).size();
 
-                            _corpusDictionary.put(term.toUpperCase(), toLowerTerm);
+                            _corpusDictionary.put(term, toLowerTerm);
                         }
                         else {  // adding a new term data to the dictionary
                             TermData newTerm = new TermData(1, docTerms.get(term).size());
@@ -169,6 +169,7 @@ public class Indexer implements Runnable {
                     _docLanguages.add(d.getLanguage());
                 }
 
+
                 m_docsIndexed++; // needed for work report
                 partialIndexed++;
 
@@ -199,8 +200,8 @@ public class Indexer implements Runnable {
         writeCityDictionary();
         writeLanguagesSet();
         System.out.println("Exiting Indexer");
-        System.out.println("Starting to extract data for report!");
 
+        //System.out.println("Starting to extract data for report!");
         //dataForReport();
     }
 
@@ -382,15 +383,6 @@ public class Indexer implements Runnable {
         indexDocuments();
     }
 
-    public void setParserDone(boolean done){
-        System.out.println("Indexer: received - Parsing is DONE");
-        this.m_parsingDone = done;
-    }
-
-    public boolean getParserDone(){
-        return m_parsingDone;
-    }
-
     public void setStemmer(boolean stem){
         this._stemmer = stem;
     }
@@ -419,7 +411,7 @@ public class Indexer implements Runnable {
             }
 
             System.out.println(String.format("Q3: Number of numeric values in the corpus: %s", numOfNumericTerms ));
-*/
+
 
             ObjectInputStream inputStream2 = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\CityDictionary"));
             HashMap<String, CityDetails> cityDict = (HashMap<String, CityDetails>) inputStream2.readObject();
@@ -461,7 +453,12 @@ public class Indexer implements Runnable {
             System.out.println(String.format("Q6: Doc number with most cities references: %s", mostCitiesDocName));
             System.out.println(String.format("\t The city name: %s", city));
             System.out.println(String.format("\t The locations are: %s", mostCityLocations.toString()));
+*/
+            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\STEMTermsDictionary"));
+            HashMap<String, TermData> loadedDict = (HashMap<String, TermData>) inputStream.readObject();
+            inputStream.close();
 
+            System.out.println(loadedDict.size());
 
         } catch (IOException e) {
             System.out.println("Error at opening file: " + e.getMessage());

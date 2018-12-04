@@ -9,16 +9,14 @@ import java.util.concurrent.BlockingQueue;
 
 public class Parser implements Runnable{
 
-    private final List<String> m_badAffix = Arrays.asList("?", ":", "--", ".", ";", "{", "}", "[", "]", "(", ")", "=", "+", "`",
-            "'", "\"", "!", "*", "~", "<", ">", "@", "&", "/", "|", "\\");
+    private static List<String> m_badAffix = Arrays.asList("?", ":", "--", ".", ";", "{", "}", "[", "]", "(", ")", "=", "+", "`",
+            "'", "\"", "!", "*", "~", "<", ">", "@", "&", "/", "|", "\\", ",");
     private HashSet<String> m_stopWords;
     public int parsedDoc;
     private BlockingQueue<Document> _beforeParse;
     private BlockingQueue<Document> _afterParse;
     private volatile boolean doneReading = false;
     private boolean _stemmer;
-
-    private Indexer _indexer;
 
     public Parser() {
     }
@@ -31,8 +29,6 @@ public class Parser implements Runnable{
     public void setStopWords(HashSet<String> stopWords){
         m_stopWords = stopWords;
     }
-
-    public void setIndexer(Indexer idx){this._indexer = idx;}
 
     public void setBeforeParse (BlockingQueue<Document> queue){this._beforeParse = queue;}
 
@@ -253,12 +249,14 @@ public class Parser implements Runnable{
                                 } else
                                     finalTerm = word;
                             }
-                        } else if (m_stopWords.contains(word.toLowerCase())) // STOP WORD CASE
-                            continue;
+                        }
 
 
                         if (finalTerm == null || monthFix) {
                             finalTerm = removePeriod(word);
+                            if (m_stopWords.contains(word.toLowerCase())) // STOP WORD CASE
+                                continue;
+
                             if (finalTerm.isEmpty() || finalTerm.length()==1){
                                 continue;
                             }
@@ -312,6 +310,8 @@ public class Parser implements Runnable{
 
                         if (!wordInsert && finalTerm != null) {
                             finalTerm = removePeriod(finalTerm);
+                            if (m_stopWords.contains(word.toLowerCase())) // STOP WORD CASE
+                                continue;
                             if (finalTerm.isEmpty() || finalTerm.length()==1){
                                 continue;
                             }
@@ -814,7 +814,6 @@ public class Parser implements Runnable{
                     valueToReturn = "" + value + "B";
                 }
             }
-
         }catch (NumberFormatException e){
             e.printStackTrace();
             System.out.println("Error: given string: {" + text[idx] + "} is not a number (float)");
@@ -934,7 +933,7 @@ public class Parser implements Runnable{
      * @param word - the string
      * @return - 'word' free of affix special characters
      */
-    private String removePeriod(String word){
+    public static String removePeriod(String word){
         if (!word.isEmpty()){
             word = removePreSuffix(word);
             word = removeDoubleDash(word);
@@ -948,7 +947,7 @@ public class Parser implements Runnable{
      * @param word - the given string
      * @return word with double dash replaced by single dash
      */
-    private String removeDoubleDash(String word) {
+    private static String removeDoubleDash(String word) {
         boolean hasRemoved;
         do {
             hasRemoved = false;
@@ -966,7 +965,7 @@ public class Parser implements Runnable{
      * @param word - the given word
      * @return the same word w\o affix
      */
-    private String removePreSuffix(String word){
+    private static String removePreSuffix(String word){
         boolean hasRemoved = true;
         while (hasRemoved){
             hasRemoved = false;
