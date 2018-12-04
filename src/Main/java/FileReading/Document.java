@@ -5,10 +5,6 @@ import java.util.LinkedHashMap;
 
 public class Document {
 
-    /*
-    TODO: finish extract headers method
-    TODO: make getters and setters and make some tests
-      */
     private String m_docNum;
     private String m_title;
     private String m_city;
@@ -40,6 +36,7 @@ public class Document {
         m_docNum = "" + id;
         m_language = "";
         _path = path;
+        m_length = 0;
 
         int textTag = fullDoc.indexOf("<TEXT>");
         int textEndTag = fullDoc.indexOf("</TEXT>");
@@ -188,16 +185,19 @@ public class Document {
         return m_length;
     }
 
+    public void calcLength(){
+        for (ArrayList<Integer> arr :
+                m_terms.values()){
+            m_length += arr.size();
+        }
+    }
+
     public LinkedHashMap<String, ArrayList<Integer>> getTermsMap() {
         return m_terms;
     }
 
     public ArrayList<Integer> getCityTerms() {
         return m_cityTerms;
-    }
-
-    public void setLength(int length){
-        this.m_length = length;
     }
 
     public short get_startLine(){return _startLine;}

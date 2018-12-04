@@ -1,6 +1,7 @@
 package Indexing;
 
 import FileReading.Document;
+import Parse.Parser;
 
 import java.io.*;
 import java.util.*;
@@ -63,7 +64,7 @@ public class Indexer implements Runnable {
                     break;
                 }
 
-                d.setLength(d.getTermsMap().size()); // setting length of the document for later use
+                d.calcLength(); // setting length of the document for later use
 
                 LinkedHashMap<String, ArrayList<Integer>> docTerms = d.getTermsMap();
                 for (String term: docTerms.keySet()) {//inserting to dictionary + partial posting
@@ -79,7 +80,7 @@ public class Indexer implements Runnable {
                             toLowerTerm.m_df += 1;
                             toLowerTerm.m_totalTF += docTerms.get(term).size();
 
-                            _corpusDictionary.put(term.toUpperCase(), toLowerTerm);
+                            _corpusDictionary.put(term, toLowerTerm);
                         }
                         else {  // adding a new term data to the dictionary
                             TermData newTerm = new TermData(1, docTerms.get(term).size());
@@ -169,6 +170,7 @@ public class Indexer implements Runnable {
                     _docLanguages.add(d.getLanguage());
                 }
 
+
                 m_docsIndexed++; // needed for work report
                 partialIndexed++;
 
@@ -199,8 +201,14 @@ public class Indexer implements Runnable {
         writeCityDictionary();
         writeLanguagesSet();
         System.out.println("Exiting Indexer");
+
+        //System.out.println("Starting to extract data for report!");
+        //dataForReport();
     }
 
+    /**
+     * method to write the languages to the disk
+     */
     private void writeLanguagesSet() {
         if (_docLanguages.isEmpty()){
             return;
@@ -398,15 +406,6 @@ public class Indexer implements Runnable {
         indexDocuments();
     }
 
-    public void setParserDone(boolean done){
-        System.out.println("Indexer: received - Parsing is DONE");
-        this.m_parsingDone = done;
-    }
-
-    public boolean getParserDone(){
-        return m_parsingDone;
-    }
-
     public void setStemmer(boolean stem){
         this._stemmer = stem;
     }
@@ -416,4 +415,81 @@ public class Indexer implements Runnable {
     public int getNumOfTerms(){return _corpusDictionary.size();}
 
     public HashSet<String> get_docLanguages(){return _docLanguages;}
+
+    public static void dataForReport(){
+        try {
+            System.out.println("Starting");
+            /*
+            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\TermsDictionary"));
+            HashMap<String, TermData> loadedDict = (HashMap<String, TermData>) inputStream.readObject();
+            inputStream.close();
+
+            // amount of term which are numbers
+            int numOfNumericTerms = 0;
+            for (String term :
+                    loadedDict.keySet()){
+                if (Parser.isNumericValue(term)){
+                    numOfNumericTerms++;
+                }
+            }
+
+            System.out.println(String.format("Q3: Number of numeric values in the corpus: %s", numOfNumericTerms ));
+
+
+            ObjectInputStream inputStream2 = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\CityDictionary"));
+            HashMap<String, CityDetails> cityDict = (HashMap<String, CityDetails>) inputStream2.readObject();
+            inputStream2.close();
+
+
+            // ---------- amount of states and cities in the corpus
+            int totalCities = 0;
+            int capitalCities = 0;
+            String mostCitiesDocName = null;
+            String city = null;
+            int mostCityAmount = 0;
+            ArrayList<Integer> mostCityLocations = null;
+            for (String s :
+                    cityDict.keySet()){
+                System.out.println(String.format("City name: %s",s));
+                totalCities++;
+                CityDetails cd = cityDict.get(s);
+                if (cd.get_country() != null){
+                    System.out.println("  and is capital");
+                    capitalCities++;
+                }
+
+                HashMap<String, ArrayList<Integer>> details = cd.getM_docs();
+                for (String doc :
+                        details.keySet()){
+                    ArrayList<Integer> arr = details.get(doc);
+                    if (arr != null && arr.size() > mostCityAmount){
+                        mostCitiesDocName = doc;
+                        mostCityAmount = arr.size();
+                        city = s;
+                        mostCityLocations = arr;
+                    }
+                }
+            }
+
+            System.out.println(String.format("Q4+5: Number of different capital cities/states in the corpus: %s", capitalCities));
+            System.out.println(String.format("Q5: Total number of cities in the corpus: %s", totalCities));
+            System.out.println(String.format("Q6: Doc number with most cities references: %s", mostCitiesDocName));
+            System.out.println(String.format("\t The city name: %s", city));
+            System.out.println(String.format("\t The locations are: %s", mostCityLocations.toString()));
+*/
+            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\STEMTermsDictionary"));
+            HashMap<String, TermData> loadedDict = (HashMap<String, TermData>) inputStream.readObject();
+            inputStream.close();
+
+            System.out.println(loadedDict.size());
+
+        } catch (IOException e) {
+            System.out.println("Error at opening file: " + e.getMessage());
+
+        } catch (ClassNotFoundException f) {
+            System.out.println("Error at casting object: " + f.getMessage());
+        }
+
+
+    }
 }

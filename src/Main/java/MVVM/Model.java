@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 
 public class Model extends Observable {
 
-//    private ThreadPoolExecutor _threads;
     private String _corpusPath;
     private String _writeTo;
     private HashMap<String, TermData> _loadedDict;
@@ -100,9 +99,7 @@ public class Model extends Observable {
         long total = end-start;
         long milis = total/1000000;
 
-        String time = "Done! \nTotal Time : " + milis/1000.00 + " Seconds" +
-                "" +
-                "";
+        String time = "Done! \nTotal Time : " + milis/1000.00 + " Seconds";
         String results = String.format("%s \nNumber of indexed docs: %s\nNumber of different terms in the corpus: %s",
                 time, indexer.getNumOfIndexed(), indexer.getNumOfTerms());
 
@@ -226,9 +223,11 @@ public class Model extends Observable {
         System.out.println("check showdict");
     }
 
+
     public HashSet<String> getLanguages() {
         return _languagesFound;
     }
+
 
     public HashMap<String, TermData> getTermDict(String stem, String path) {
         return _loadedDict;

@@ -251,8 +251,7 @@ public class ReadFile2 implements Runnable {
 
         }*/
 
-        IndexMerger im = new IndexMerger("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\", null, false);
-        im.filesCleanup();
+        Indexer.dataForReport();
     }
 
     /**
