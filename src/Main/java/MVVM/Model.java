@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 
 public class Model extends Observable {
 
-//    private ThreadPoolExecutor _threads;
     private String _corpusPath;
     private String _writeTo;
     private HashMap<String, TermData> _loadedDict;
@@ -226,9 +225,11 @@ public class Model extends Observable {
         System.out.println("check showdict");
     }
 
+
     public HashSet<String> getLanguages() {
         return _languagesFound;
     }
+
 
     public HashMap<String, TermData> getTermDict(String stem, String path) {
         return _loadedDict;

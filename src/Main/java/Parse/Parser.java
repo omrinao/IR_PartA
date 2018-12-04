@@ -413,7 +413,7 @@ public class Parser implements Runnable{
      * @param word - the string to check
      * @return true if its numeric, false otherwise
      */
-    private boolean isNumericValue(String word) {
+    public static boolean isNumericValue(String word) {
         try {
             Float.valueOf(word);
         }catch (NumberFormatException e){
