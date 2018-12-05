@@ -230,6 +230,17 @@ public class Model extends Observable {
 
 
     public HashMap<String, TermData> getTermDict(String stem, String path) {
+        if (_loadedDict == null){
+            String stemming = Boolean.valueOf(stem) ? "STEM" : "";
+            try {
+                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(path + "\\" + stemming + "TermsDictionary"));
+                _loadedDict = (HashMap<String, TermData>) inputStream.readObject();
+                inputStream.close();
+            }catch (IOException | ClassNotFoundException e){
+
+            }
+        }
+
         return _loadedDict;
     }
 }

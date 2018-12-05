@@ -170,7 +170,7 @@ public class IndexMerger {
         try{
             for (BufferedReader br : _postingReaders)
                 br.close();
-
+            _postingWriter.flush();
             _postingWriter.close();
         }
         catch (IOException e){

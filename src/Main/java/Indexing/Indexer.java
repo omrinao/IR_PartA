@@ -11,11 +11,10 @@ import java.util.regex.Pattern;
 
 public class Indexer implements Runnable {
 
-    private int m_docsPerPartialPosting;
-    private int _partialPostingCount;
-    private int m_docsIndexed;
-    private volatile boolean m_parsingDone;
-    private boolean _stemmer;
+    private int m_docsPerPartialPosting;    // amount of docs per partial posting
+    private int _partialPostingCount;       // counter for doc in a partial posting
+    private int m_docsIndexed;              // needed for reports
+    private boolean _stemmer;               // if stemming is used
 
     private final String PARTIAL_POSTING = "PartialPosting";
     private final String TXT = ".txt";
@@ -28,7 +27,7 @@ public class Indexer implements Runnable {
     private HashMap<String, TreeSet<PostingTermData>> _partialPosting;  // the partial posting data for the current documents
 
     private CityIndex _cityIndex;                            // instance of the city API, contains all API relevant details
-    private HashMap <String, CityDetails> _cityDictionary;
+    private HashMap <String, CityDetails> _cityDictionary;   // structure for city details
 
     private HashMap<Integer, PostingDocData> _docData;       // structure for docs posting data
     private HashSet<String> _docLanguages;                  // structure for docs languages
@@ -37,7 +36,6 @@ public class Indexer implements Runnable {
         this.WORKING_DIRECTORY = writingLocation;
         this.m_docsPerPartialPosting = docsPerPartialPosting;
         this.m_docsIndexed = 0;
-        this.m_parsingDone = false;
         this._partialPostingCount = 0;
 
         this._corpusDictionary = new HashMap<>();
@@ -174,7 +172,7 @@ public class Indexer implements Runnable {
                 }
 
                 _docData.put(Integer.valueOf(d.getDocNum()),
-                        new PostingDocData(d.getMaxTF(), docTerms.size(), d.get_startLine(), d.get_endLine(), d.get_path()));
+                        new PostingDocData(d.getMaxTF(), docTerms.size(), d.get_startLine(), d.get_endLine(), d.get_path(), d.getLength()));
 
                 if (!d.getLanguage().isEmpty()){
                     _docLanguages.add(d.getLanguage());
@@ -245,6 +243,7 @@ public class Indexer implements Runnable {
         String path = WORKING_DIRECTORY + "LanguagesSet";
         try(ObjectOutputStream write = new ObjectOutputStream(new FileOutputStream(path));) {
             write.writeObject(_corpusDictionary);
+            write.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -287,6 +286,7 @@ public class Indexer implements Runnable {
 
         try(ObjectOutputStream write = new ObjectOutputStream(new FileOutputStream(path));) {
             write.writeObject(_corpusDictionary);
+            write.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -306,6 +306,7 @@ public class Indexer implements Runnable {
         TreeMap<String, CityDetails> sorted = new TreeMap<>(_cityDictionary);
         try(ObjectOutputStream write = new ObjectOutputStream(new FileOutputStream(path))) {
             write.writeObject(_cityDictionary);
+            write.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -342,7 +343,7 @@ public class Indexer implements Runnable {
      * method to write to doc posting
      * @throws IOException - if error occured duric writing
      */
-    private void writeToDocPosting()  throws IOException{
+    private void writeToDocPosting() throws IOException{
         String path = null;
         if (_stemmer)
             path = WORKING_DIRECTORY + DOC_POSTING +STEMMER + TXT;
@@ -359,6 +360,7 @@ public class Indexer implements Runnable {
                 PostingDocData cur = sorted.get(docNum);
                 bw.append(String.format("%s\n", cur.toString()));
             }
+            bw.flush();
         }
     }
 
@@ -453,6 +455,20 @@ public class Indexer implements Runnable {
             HashMap<String, TermData> loadedDict = (HashMap<String, TermData>) inputStream.readObject();
             inputStream.close();
 
+
+            // amount of term which are numbers
+            int numOfNumericTerms = 0;
+            for (String term :
+                    loadedDict.keySet()){
+                if (Parser.isNumericValue(term)){
+                    numOfNumericTerms++;
+                }
+            }
+
+            System.out.println(String.format("Q3: Number of numeric values in the corpus: %s", numOfNumericTerms ));
+
+
+
             ObjectInputStream inputStream2 = new ObjectInputStream(new FileInputStream("C:\\Users\\omri\\Desktop\\IR_PartA\\CityDictionary"));
             HashMap<String, CityDetails> cityDict = (HashMap<String, CityDetails>) inputStream2.readObject();
             inputStream2.close();
@@ -493,6 +509,7 @@ public class Indexer implements Runnable {
             System.out.println(String.format("Q6: Doc number with most cities references: %s", mostCitiesDocName));
             System.out.println(String.format("\t The city name: %s", city));
             System.out.println(String.format("\t The locations are: %s", mostCityLocations.toString()));
+
             System.out.println(mostCityLocations.size());
 /*
             ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\STEMTermsDictionary"));
