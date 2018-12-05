@@ -163,7 +163,7 @@ public class Indexer implements Runnable {
                 }
 
                 _docData.put(Integer.valueOf(d.getDocNum()),
-                        new PostingDocData(d.getMaxTF(), docTerms.size(), d.get_startLine(), d.get_endLine(), d.get_path()));
+                        new PostingDocData(d.getMaxTF(), docTerms.size(), d.get_startLine(), d.get_endLine(), d.get_path(), d.getLength()));
 
                 if (!d.getLanguage().isEmpty()){
                     _docLanguages.add(d.getLanguage());
@@ -215,6 +215,7 @@ public class Indexer implements Runnable {
         String path = WORKING_DIRECTORY + "LanguagesSet";
         try(ObjectOutputStream write = new ObjectOutputStream(new FileOutputStream(path));) {
             write.writeObject(_corpusDictionary);
+            write.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -235,6 +236,7 @@ public class Indexer implements Runnable {
 
         try(ObjectOutputStream write = new ObjectOutputStream(new FileOutputStream(path));) {
             write.writeObject(_corpusDictionary);
+            write.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -254,6 +256,7 @@ public class Indexer implements Runnable {
 
         try(ObjectOutputStream write = new ObjectOutputStream(new FileOutputStream(path))) {
             write.writeObject(_cityDictionary);
+            write.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -290,7 +293,7 @@ public class Indexer implements Runnable {
      * method to write to doc posting
      * @throws IOException - if error occured duric writing
      */
-    private void writeToDocPosting()  throws IOException{
+    private void writeToDocPosting() throws IOException{
         String path = null;
         if (_stemmer)
             path = WORKING_DIRECTORY + DOC_POSTING +STEMMER + TXT;
@@ -307,6 +310,7 @@ public class Indexer implements Runnable {
                 PostingDocData cur = sorted.get(docNum);
                 bw.append(String.format("%s\n", cur.toString()));
             }
+            bw.flush();
         }
     }
 
@@ -411,7 +415,7 @@ public class Indexer implements Runnable {
             }
 
             System.out.println(String.format("Q3: Number of numeric values in the corpus: %s", numOfNumericTerms ));
-
+*/
 
             ObjectInputStream inputStream2 = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\CityDictionary"));
             HashMap<String, CityDetails> cityDict = (HashMap<String, CityDetails>) inputStream2.readObject();
@@ -453,13 +457,14 @@ public class Indexer implements Runnable {
             System.out.println(String.format("Q6: Doc number with most cities references: %s", mostCitiesDocName));
             System.out.println(String.format("\t The city name: %s", city));
             System.out.println(String.format("\t The locations are: %s", mostCityLocations.toString()));
-*/
+            System.out.println(String.format("Netanel ya ben shrloaaaaaa: %s", mostCityAmount));
+/*
             ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\STEMTermsDictionary"));
             HashMap<String, TermData> loadedDict = (HashMap<String, TermData>) inputStream.readObject();
             inputStream.close();
 
             System.out.println(loadedDict.size());
-
+*/
         } catch (IOException e) {
             System.out.println("Error at opening file: " + e.getMessage());
 

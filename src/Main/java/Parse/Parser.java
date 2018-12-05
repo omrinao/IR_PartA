@@ -1,7 +1,6 @@
 package Parse;
 
 import FileReading.Document;
-import Indexing.Indexer;
 import Terms.IntWrapper;
 
 import java.util.*;
@@ -15,7 +14,6 @@ public class Parser implements Runnable{
     public int parsedDoc;
     private BlockingQueue<Document> _beforeParse;
     private BlockingQueue<Document> _afterParse;
-    private volatile boolean doneReading = false;
     private boolean _stemmer;
 
     public Parser() {
@@ -33,11 +31,6 @@ public class Parser implements Runnable{
     public void setBeforeParse (BlockingQueue<Document> queue){this._beforeParse = queue;}
 
     public void setAfterParse(BlockingQueue<Document> queue) {this._afterParse = queue;}
-
-    public void setDoneReading (boolean done){
-        this.doneReading = done;
-        System.out.println("Parse: received, Reading is DONE");
-    }
 
     public void setStemmer(boolean stem){this._stemmer = stem;}
 
@@ -935,7 +928,7 @@ public class Parser implements Runnable{
      */
     public static String removePeriod(String word){
         if (!word.isEmpty()){
-            word = removePreSuffix(word);
+            word = removeBadAffix(word);
             word = removeDoubleDash(word);
         }
 
@@ -965,7 +958,7 @@ public class Parser implements Runnable{
      * @param word - the given word
      * @return the same word w\o affix
      */
-    private static String removePreSuffix(String word){
+    private static String removeBadAffix(String word){
         boolean hasRemoved = true;
         while (hasRemoved){
             hasRemoved = false;
