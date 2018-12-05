@@ -16,11 +16,11 @@ public class Main extends Application {
         pStage = primaryStage;
 
         System.out.println(getClass().getResource(""));
-        FXMLLoader fxml = new FXMLLoader(getClass().getResource("../MainView.fxml"));
+        FXMLLoader fxml = new FXMLLoader(getClass().getResource("/MainView.fxml"));
         Parent root = fxml.load();
         primaryStage.setTitle("IR 2019");
         Scene scene = new Scene(root, 750, 500);
-        scene.getStylesheets().add(getClass().getResource("../ViewStyle.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/ViewStyle.css").toExternalForm());
         primaryStage.setScene(scene);
 
         // --------- setting up the MVVM --------

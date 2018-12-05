@@ -165,6 +165,7 @@ public class View implements Observer {
         }
 
         listView = new ListView();
+
         TreeMap<String, TermData> sorted = new TreeMap<>(new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
@@ -175,14 +176,16 @@ public class View implements Observer {
         for (String s : sorted.keySet()) {
             listView.getItems().add("Term:  " + s + "     Total TF:  "+ unsortedDict.get(s).getM_totalTF());
         }
+
         Scene scene=new Scene(new Group());
         stage.initModality(Modality.APPLICATION_MODAL); //Lock the window until it closes
         final VBox vBox=new VBox();
         vBox.setSpacing(5);
         vBox.setPadding(new Insets(10,0,0,10));
-
+        vBox.setPrefWidth(350);
         vBox.getChildren().addAll(listView);
         vBox.setAlignment(Pos.CENTER);
+
 
         Group group=((Group) scene.getRoot());
         group.getChildren().addAll(vBox);

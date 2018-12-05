@@ -2,7 +2,7 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -36,27 +36,27 @@
                   <RowConstraints maxHeight="230.0" minHeight="10.0" prefHeight="79.0" vgrow="SOMETIMES" />
               </rowConstraints>
                <children>
-                  <Button mnemonicParsing="false" onAction="#directoryBrowseEvent" text="Browse" GridPane.columnIndex="2" />
-                  <Label alignment="CENTER_RIGHT" prefHeight="34.0" prefWidth="227.0" text="File directory: " textFill="WHITE">
+                  <Button mnemonicParsing="false" onAction="#corpusChoose" text="Browse" GridPane.columnIndex="2" />
+                  <Label alignment="CENTER_RIGHT" prefHeight="34.0" prefWidth="227.0" text="Corpus Directory: " textFill="WHITE">
                      <font>
                         <Font name="Calibri Bold" size="16.0" />
                      </font></Label>
                   <TextField fx:id="corpus" GridPane.columnIndex="1" />
-                  <Label alignment="CENTER_RIGHT" prefHeight="34.0" prefWidth="229.0" text="Dictionary and Posting directory:  " textFill="WHITE" GridPane.rowIndex="1">
+                  <Label alignment="CENTER_RIGHT" prefHeight="34.0" prefWidth="229.0" text="Output Directory:" textFill="WHITE" GridPane.rowIndex="1">
                      <font>
                         <Font name="Calibri Bold" size="16.0" />
                      </font></Label>
+                  <ChoiceBox fx:id="_languageChoice" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                   <TextField fx:id="dictpost" layoutX="10.0" layoutY="22.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                  <ComboBox prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                   <Label alignment="CENTER_RIGHT" prefHeight="21.0" prefWidth="224.0" text="Language: " textFill="WHITE" GridPane.rowIndex="2">
                      <font>
                         <Font name="Calibri" size="16.0" />
                      </font></Label>
-                  <CheckBox fx:id="stemming" mnemonicParsing="false" prefHeight="28.0" prefWidth="103.0" text="Stemming" textFill="WHITE" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                  <CheckBox fx:id="stemming" mnemonicParsing="false" prefHeight="28.0" prefWidth="103.0" text="Stemming" textFill="#e8130c" GridPane.columnIndex="2" GridPane.rowIndex="2">
                      <font>
                         <Font name="Calibri Bold" size="16.0" />
                      </font></CheckBox>
-                  <Button layoutX="10.0" layoutY="20.0" mnemonicParsing="false" onAction="#dictionaryBrowseEvent" text="Browse" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                  <Button layoutX="10.0" layoutY="20.0" mnemonicParsing="false" onAction="#outputChoose" text="Browse" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                   <Button alignment="CENTER" layoutX="10.0" layoutY="20.0" mnemonicParsing="false" onAction="#executeEvent" text="Execute" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="BOTTOM" />
                   <Button layoutX="10.0" layoutY="20.0" mnemonicParsing="false" onAction="#resetEvent" text="Reset" GridPane.columnIndex="2" GridPane.rowIndex="3" GridPane.valignment="BOTTOM" />
                   <Button layoutX="10.0" layoutY="20.0" mnemonicParsing="false" onAction="#showDictEvent" text="Show Dictionary" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
