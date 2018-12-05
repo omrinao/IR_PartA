@@ -825,7 +825,6 @@ public class Parser implements Runnable{
         return valueToReturn;
     }
 
-
     /**
      * a method that turns a classified number into a term
      * @param idx - the idx of the starting number
@@ -926,7 +925,6 @@ public class Parser implements Runnable{
 
         return valueToReturn;
     }
-
 
     /**
      * a method to cut special characters at the end and start of a given string if exist
