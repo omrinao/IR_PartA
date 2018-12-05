@@ -91,6 +91,7 @@ public class ReadFile2 implements Runnable {
         return problemPaths;
     }
 
+
     private void extractDocs(Path path) throws IOException, InterruptedException {
 
         try (BufferedReader br = new BufferedReader(new FileReader(path.toString()))) {

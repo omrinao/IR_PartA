@@ -9,9 +9,10 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.UnknownHostException;
 
-public class CityIndex {
+public class CityIndex implements Serializable{
 
     // this object will hold only the information we need (capital, population, currency) from all the API
     public JsonElement m_JsonE;
@@ -73,13 +74,13 @@ public class CityIndex {
         return details;
     }
 
-    /*public static void main(String[] args) {
+    public static void main(String[] args) {
         CityIndex ci = new CityIndex();
         String[] s = ci.getDetails("moscow");
         for (String g: s
              ) {
             System.out.println(g);
         }
-    }*/
+    }
 
 }
