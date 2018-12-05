@@ -220,7 +220,15 @@ public class Document {
 
     public String get_path(){return _path;}
 
-    public void setLanguage(String lenguange){this.m_language = lenguange;}
+    public void setLanguage(String language){
+        if (!language.isEmpty() &&
+                (language.charAt(0) > 90 || language.charAt(0) < 65)){
+            m_language = "";
+        }
+        else{
+            this.m_language = language;
+        }
+    }
 
 
 }

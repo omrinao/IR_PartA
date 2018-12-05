@@ -303,7 +303,6 @@ public class Indexer implements Runnable {
             path = WORKING_DIRECTORY + "CityDictionary";
         }
 
-        TreeMap<String, CityDetails> sorted = new TreeMap<>(_cityDictionary);
         try(ObjectOutputStream write = new ObjectOutputStream(new FileOutputStream(path))) {
             write.writeObject(_cityDictionary);
             write.flush();
@@ -454,20 +453,6 @@ public class Indexer implements Runnable {
             ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\omri\\Desktop\\IR_PartA\\TermsDictionary"));
             HashMap<String, TermData> loadedDict = (HashMap<String, TermData>) inputStream.readObject();
             inputStream.close();
-
-
-            // amount of term which are numbers
-            int numOfNumericTerms = 0;
-            for (String term :
-                    loadedDict.keySet()){
-                if (Parser.isNumericValue(term)){
-                    numOfNumericTerms++;
-                }
-            }
-
-            System.out.println(String.format("Q3: Number of numeric values in the corpus: %s", numOfNumericTerms ));
-
-
 
             ObjectInputStream inputStream2 = new ObjectInputStream(new FileInputStream("C:\\Users\\omri\\Desktop\\IR_PartA\\CityDictionary"));
             HashMap<String, CityDetails> cityDict = (HashMap<String, CityDetails>) inputStream2.readObject();

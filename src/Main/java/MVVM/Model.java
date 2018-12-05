@@ -1,12 +1,10 @@
 package MVVM;
 
 import FileReading.Document;
-import FileReading.ReadFile;
 import FileReading.ReadFile2;
 import Indexing.Indexer;
 import Indexing.TermData;
 import Parse.Parser;
-import sun.nio.ch.ThreadPool;
 
 import java.io.FileInputStream;
 import java.io.IOException;
