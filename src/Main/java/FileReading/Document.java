@@ -66,7 +66,7 @@ public class Document {
         if (start!=-1 &&
                 end!=-1 &&
                 start < end){
-            m_language = substring.substring(start+8, end);
+            m_language = substring.substring(start+9, end);
             m_language= m_language.replaceAll("\\s+", "");
         }
 

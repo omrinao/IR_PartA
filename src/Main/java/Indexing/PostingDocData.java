@@ -4,7 +4,6 @@ public class PostingDocData {
 
     int _maxTF;
     int _uniqueTerms;
-    //String _city;
     short _startLine;
     short _endLine;
     String _relativePath;

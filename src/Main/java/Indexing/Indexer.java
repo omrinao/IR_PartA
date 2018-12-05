@@ -9,11 +9,10 @@ import java.util.concurrent.BlockingQueue;
 
 public class Indexer implements Runnable {
 
-    private int m_docsPerPartialPosting;
-    private int _partialPostingCount;
-    private int m_docsIndexed;
-    private volatile boolean m_parsingDone;
-    private boolean _stemmer;
+    private int m_docsPerPartialPosting;    // amount of docs per partial posting
+    private int _partialPostingCount;       // counter for doc in a partial posting
+    private int m_docsIndexed;              // needed for reports
+    private boolean _stemmer;               // if stemming is used
 
     private final String PARTIAL_POSTING = "PartialPosting";
     private final String TXT = ".txt";
@@ -26,7 +25,7 @@ public class Indexer implements Runnable {
     private HashMap<String, TreeSet<PostingTermData>> _partialPosting;  // the partial posting data for the current documents
 
     private CityIndex _cityIndex;                            // instance of the city API, contains all API relevant details
-    private HashMap <String, CityDetails> _cityDictionary;
+    private HashMap <String, CityDetails> _cityDictionary;   // structure for city details
 
     private HashMap<Integer, PostingDocData> _docData;       // structure for docs posting data
     private HashSet<String> _docLanguages;                  // structure for docs languages
@@ -35,7 +34,6 @@ public class Indexer implements Runnable {
         this.WORKING_DIRECTORY = writingLocation;
         this.m_docsPerPartialPosting = docsPerPartialPosting;
         this.m_docsIndexed = 0;
-        this.m_parsingDone = false;
         this._partialPostingCount = 0;
 
         this._corpusDictionary = new HashMap<>();

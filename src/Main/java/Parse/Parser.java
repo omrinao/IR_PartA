@@ -9,7 +9,7 @@ import java.util.concurrent.BlockingQueue;
 public class Parser implements Runnable{
 
     private static List<String> m_badAffix = Arrays.asList("?", ":", "--", ".", ";", "{", "}", "[", "]", "(", ")", "=", "+", "`",
-            "'", "\"", "!", "*", "~", "<", ">", "@", "&", "/", "|", "\\", ",");
+            "'", "\"", "!", "*", "~", "<", ">", "@", "&", "/", "|", "\\", ",", "#");
     private HashSet<String> m_stopWords;
     public int parsedDoc;
     private BlockingQueue<Document> _beforeParse;
