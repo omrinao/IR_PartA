@@ -58,8 +58,22 @@ public class Document {
      * @param substring - substring of all string inside text tag
      */
     private void extractText(String substring) {
-        int start = substring.indexOf("<F P=105>");
-        int end = substring.indexOf("</F P=105>");
+
+        int start = substring.indexOf("<F P=104>");
+        int end = substring.indexOf("</F P=104>");
+        if (start != -1 && start>end)
+            end = start + findFTag(substring.substring(start));
+
+        if (start!=-1 &&
+                end!=-1 &&
+                start < end){
+            String cityVal = substring.substring(start + 9, end).trim();
+            String[] parsedCities = cityVal.split("\\s+");
+            m_city = parsedCities[0];
+        }
+
+        start = substring.indexOf("<F P=105>");
+        end = substring.indexOf("</F P=105>");
         if (start != -1 && start>end)
             end = start + findFTag(substring.substring(start));
 

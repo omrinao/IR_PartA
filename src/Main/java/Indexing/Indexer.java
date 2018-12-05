@@ -2,10 +2,12 @@ package Indexing;
 
 import FileReading.Document;
 import Parse.Parser;
+import javafx.scene.layout.Pane;
 
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.regex.Pattern;
 
 public class Indexer implements Runnable {
 
@@ -140,23 +142,32 @@ public class Indexer implements Runnable {
                 } // for end
                 // inserting to city dictionary
                 if (!d.getCity().isEmpty()) {//checking if <F P=104> label is exist
-                    HashMap<String, ArrayList<Integer>> docsLocations = new HashMap<>();
-                    if (_corpusDictionary.containsKey(d.getCity().toUpperCase())){//check if the corpus contains the city
-                        docsLocations.put(d.getDocNum(), d.getTermsMap().get(d.getCity().toUpperCase()));//get the docnum + locations
-                    }
-                    else{
-                        docsLocations.put(d.getDocNum(), null);
-                    }
-                    if (_cityDictionary.get(d.getCity()) == null) {//city dictionary does not contains the city
-                        if (_cityIndex.getDetails(d.getCity())[0] == null) {//its not a capital city
-                            _cityDictionary.put(d.getCity(), new CityDetails(null, null, null, docsLocations));//inserting just the city name and the document number
-                        } else {// its a capital city
-                            String[] details = _cityIndex.getDetails(d.getCity());
-                            _cityDictionary.put(d.getCity(), new CityDetails(details[0], details[2], details[1], docsLocations));
+                    String city = fixCity(d.getCity());
+                    if (!city.isEmpty()) {//fix city return a value
+                        String cityPattern = "";//first uppercase then lowercase
+                        HashMap<String, ArrayList<Integer>> docsLocations = new HashMap<>();
+                        if (d.getTermsMap().containsKey(city.toUpperCase())) {//check if the document contains the city
+                            docsLocations.put(d.getDocNum(), d.getTermsMap().get(city.toUpperCase()));//get the docnum + locations
                         }
+                        else if (d.getTermsMap().containsKey(city.toLowerCase())){
+                            docsLocations.put(d.getDocNum(), d.getTermsMap().get(city.toLowerCase()));//get the docnum + locations
+                        }
+                        else {
+                            docsLocations.put(d.getDocNum(), null);
+                        }
+                        cityPattern = Character.toUpperCase(city.charAt(0)) + city.substring(1);
+                        if (_cityDictionary.get(cityPattern) == null) {//city dictionary does not contains the city
+                            if (_cityIndex.getDetails(cityPattern)[0] == null) {//its not a capital city
+                                _cityDictionary.put(cityPattern, new CityDetails(null, null, null, docsLocations));//inserting just the city name and the document number
+                            } else {// its a capital city
+                                String[] details = _cityIndex.getDetails(cityPattern);
+                                details[1] = fixPopulation(details[1]);
+                                _cityDictionary.put(cityPattern, new CityDetails(details[0], details[2], details[1], docsLocations));
+                            }
 
-                    } else {//city dictionary contains the city, updating docnum + locations
-                        _cityDictionary.get(d.getCity()).getM_docs().put(d.getDocNum(), docsLocations.get(d.getDocNum()));//adding another document
+                        } else {//city dictionary contains the city, updating docnum + locations
+                            _cityDictionary.get(cityPattern).getM_docs().put(d.getDocNum(), docsLocations.get(d.getDocNum()));//adding another document
+                        }
                     }
                 }
 
@@ -204,6 +215,25 @@ public class Indexer implements Runnable {
     }
 
     /**
+     * this method receive a string which represents a city and fixes some problem that could be happen
+     * @param city
+     * @return
+     */
+    private String fixCity(String city) {
+        String valueToReturn = Parser.removePeriod(city);
+        String regex = "(.)*(\\d)(.)*";
+        Pattern pattern = Pattern.compile(regex);
+
+        if (pattern.matcher(valueToReturn).matches())//city contains number
+            return "";
+
+        if (valueToReturn.equals("the") || valueToReturn.equals("THE") || valueToReturn.equals("FOR"))
+            return "";
+
+        return valueToReturn;
+    }
+
+    /**
      * method to write the languages to the disk
      */
     private void writeLanguagesSet() {
@@ -218,6 +248,28 @@ public class Indexer implements Runnable {
             e.printStackTrace();
         }
 
+    }
+
+    /**
+     * method that fix the population to x.yy M format
+     * @param detail - the population
+     * @return
+     */
+    private String fixPopulation(String detail) {
+        float population = 0;
+        String valueToReturn = "";
+        try{
+            population = Float.valueOf(detail);
+            if (population > 1000000){
+                population = population / 1000000;
+                valueToReturn = String.format("%.2f", population) + "M";
+            }
+        }
+        catch (Exception e){
+
+        }
+
+        return valueToReturn;
     }
 
     /**
@@ -251,7 +303,7 @@ public class Indexer implements Runnable {
             path = WORKING_DIRECTORY + "CityDictionary";
         }
 
-
+        TreeMap<String, CityDetails> sorted = new TreeMap<>(_cityDictionary);
         try(ObjectOutputStream write = new ObjectOutputStream(new FileOutputStream(path))) {
             write.writeObject(_cityDictionary);
             write.flush();
@@ -398,10 +450,11 @@ public class Indexer implements Runnable {
     public static void dataForReport(){
         try {
             System.out.println("Starting");
-            /*
-            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\TermsDictionary"));
+
+            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\omri\\Desktop\\IR_PartA\\TermsDictionary"));
             HashMap<String, TermData> loadedDict = (HashMap<String, TermData>) inputStream.readObject();
             inputStream.close();
+
 
             // amount of term which are numbers
             int numOfNumericTerms = 0;
@@ -413,9 +466,10 @@ public class Indexer implements Runnable {
             }
 
             System.out.println(String.format("Q3: Number of numeric values in the corpus: %s", numOfNumericTerms ));
-*/
 
-            ObjectInputStream inputStream2 = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\CityDictionary"));
+
+
+            ObjectInputStream inputStream2 = new ObjectInputStream(new FileInputStream("C:\\Users\\omri\\Desktop\\IR_PartA\\CityDictionary"));
             HashMap<String, CityDetails> cityDict = (HashMap<String, CityDetails>) inputStream2.readObject();
             inputStream2.close();
 
@@ -429,11 +483,11 @@ public class Indexer implements Runnable {
             ArrayList<Integer> mostCityLocations = null;
             for (String s :
                     cityDict.keySet()){
-                System.out.println(String.format("City name: %s",s));
+                //System.out.println(String.format("City name: %s",s));
                 totalCities++;
                 CityDetails cd = cityDict.get(s);
                 if (cd.get_country() != null){
-                    System.out.println("  and is capital");
+                  //  System.out.println("  and is capital");
                     capitalCities++;
                 }
 
@@ -455,7 +509,8 @@ public class Indexer implements Runnable {
             System.out.println(String.format("Q6: Doc number with most cities references: %s", mostCitiesDocName));
             System.out.println(String.format("\t The city name: %s", city));
             System.out.println(String.format("\t The locations are: %s", mostCityLocations.toString()));
-            System.out.println(String.format("Netanel ya ben shrloaaaaaa: %s", mostCityAmount));
+
+            System.out.println(mostCityLocations.size());
 /*
             ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\STEMTermsDictionary"));
             HashMap<String, TermData> loadedDict = (HashMap<String, TermData>) inputStream.readObject();
