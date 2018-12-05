@@ -1,7 +1,6 @@
 package Parse;
 
 import FileReading.Document;
-import Terms.IntWrapper;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -15,6 +14,9 @@ public class Parser implements Runnable{
     private BlockingQueue<Document> _beforeParse;
     private BlockingQueue<Document> _afterParse;
     private boolean _stemmer;
+
+    private static List<String> m_badAffix2 = Arrays.asList("?", ":", "--", ".", ";", "{", "}", "[", "]", "(", ")", "=", "+", "`",
+            "'", "\"", "!", "*", "~", "<", ">", "@", "&", "/", "|", "\\", ",", "#", "%", "$", "^");
 
     public Parser() {
     }
@@ -48,7 +50,7 @@ public class Parser implements Runnable{
                     System.out.println("Parse: Parsing is DONE, send to Indexing");
                     break;
                 }
-                d.setLanguage(removePeriod(d.getLanguage()));
+                d.setLanguage(removePeriod2(d.getLanguage()));
                 String allText = d.getText();
                 if (allText == null || allText.isEmpty())
                     continue;
@@ -246,7 +248,7 @@ public class Parser implements Runnable{
 
 
                         if (finalTerm == null || monthFix) {
-                            finalTerm = removePeriod(word);
+                            finalTerm = removePeriod2(word);
                             if (m_stopWords.contains(word.toLowerCase())) // STOP WORD CASE
                                 continue;
 
@@ -593,7 +595,7 @@ public class Parser implements Runnable{
         }catch (NumberFormatException e){
             //e.printStackTrace();
             //System.out.println("Error: given string is not a number (float)! at word: " + priceTerm.toString());
-            throw new Exception();
+            return null;
         }catch (Exception e){
             //e.printStackTrace();
             System.out.println("Error: unknown error. at words" + priceTerm.toString());
@@ -698,6 +700,9 @@ public class Parser implements Runnable{
         try {
             if (word.contains("%")){
                 valueToReturn = word;
+                if (word.charAt(0) == '%'){
+                    valueToReturn = null;
+                }
             }
             else if (idx + 1 < text.length){// case of percent/percentage after a number
                 String nextWord = removePeriod(text[idx + 1].toLowerCase());
@@ -961,6 +966,47 @@ public class Parser implements Runnable{
         while (hasRemoved){
             hasRemoved = false;
             for (String bad : m_badAffix){
+                if (word.startsWith(bad)){
+                    word = word.substring(bad.length());
+                    hasRemoved = true;
+                }
+                if (word.endsWith(bad)){
+                    word = word.substring(0, word.length() - bad.length());
+                    hasRemoved = true;
+                }
+            }
+            if (word.startsWith("-") && !isNumericValue(word.substring(1))){
+                word = word.substring(1);
+            }
+        }
+
+
+        return word;
+    }
+
+    /**
+     * a method to cut special characters at the end and start of a given string if exist
+     * @param word - the string
+     * @return - 'word' free of affix special characters
+     */
+    public static String removePeriod2(String word){
+        if (!word.isEmpty()){
+            word = removeBadAffix2(word);
+        }
+
+        return word;
+    }
+
+    /**
+     * a method to remove prefix and suffix bad args
+     * @param word - the given word
+     * @return the same word w\o affix
+     */
+    private static String removeBadAffix2(String word){
+        boolean hasRemoved = true;
+        while (hasRemoved){
+            hasRemoved = false;
+            for (String bad : m_badAffix2){
                 if (word.startsWith(bad)){
                     word = word.substring(bad.length());
                     hasRemoved = true;

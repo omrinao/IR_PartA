@@ -74,13 +74,5 @@ public class CityIndex implements Serializable{
         return details;
     }
 
-    public static void main(String[] args) {
-        CityIndex ci = new CityIndex();
-        String[] s = ci.getDetails("moscow");
-        for (String g: s
-             ) {
-            System.out.println(g);
-        }
-    }
 
 }
