@@ -134,25 +134,9 @@ public class ReadFile2 implements Runnable {
     }
 
 
-
-    /**
-     * When an object implementing interface <code>Runnable</code> is used
-     * to create a thread, starting the thread causes the object's
-     * <code>run</code> method to be called in that separately executing
-     * thread.
-     * <_parser>
-     * The general contract of the method <code>run</code> is that it may
-     * take any action whatsoever.
-     *
-     * @see Thread#run()
-     @Override
-     public void run() {
-     getDocuments();
-     }
-     */
-
+ /*
     public static void main(String[] args){
-      /*  long start = System.nanoTime();
+       long start = System.nanoTime();
         System.out.println("Started");
 
         // initing classes
@@ -222,7 +206,7 @@ public class ReadFile2 implements Runnable {
         }
 
         try{
-            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\TermsDictionary"));
+            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("d:\\documents\\users\\tamiry\\Downloads\\TermsDictionary"));
             HashMap<String, TermData> dict = (HashMap<String, TermData>) inputStream.readObject();
             inputStream.close();
             RandomAccessFile file = new RandomAccessFile("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\FinalPosting.txt", "r" );
@@ -250,11 +234,11 @@ public class ReadFile2 implements Runnable {
         }catch (ClassNotFoundException f){
             System.out.println("object is not good " + f.getMessage());
 
-        }*/
+        }
 
         Indexer.dataForReport();
     }
-
+*/
     /**
      * Computes a result, or throws an exception if unable to do so.
      *

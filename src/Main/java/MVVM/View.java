@@ -27,6 +27,7 @@ public class View implements Observer {
     @FXML
     public TextField corpus;
     public TextField dictpost;
+    public TextField tf_loadQueryFile;
     public CheckBox stemming;
 
     public javafx.scene.control.ChoiceBox _languageChoice;
@@ -165,24 +166,27 @@ public class View implements Observer {
         }
 
         listView = new ListView();
+
         TreeMap<String, TermData> sorted = new TreeMap<>(new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
-                return o1.compareToIgnoreCase(o2);
+                return o1.compareTo(o2);
             }
         });
         sorted.putAll(unsortedDict);
         for (String s : sorted.keySet()) {
             listView.getItems().add("Term:  " + s + "     Total TF:  "+ unsortedDict.get(s).getM_totalTF());
         }
+
         Scene scene=new Scene(new Group());
         stage.initModality(Modality.APPLICATION_MODAL); //Lock the window until it closes
         final VBox vBox=new VBox();
         vBox.setSpacing(5);
         vBox.setPadding(new Insets(10,0,0,10));
-
+        vBox.setPrefWidth(350);
         vBox.getChildren().addAll(listView);
         vBox.setAlignment(Pos.CENTER);
+
 
         Group group=((Group) scene.getRoot());
         group.getChildren().addAll(vBox);
@@ -242,6 +246,32 @@ public class View implements Observer {
 
         prob.setContentText(description);
         prob.showAndWait();
+    }
+
+    /**
+     * this method will allow the user to select a directory from the computer
+     * @param actionEvent
+     */
+    public void queryChoose(ActionEvent actionEvent) {
+
+        try {
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            File selectedDirectory =
+                    directoryChooser.showDialog(Main.pStage);
+
+            if(selectedDirectory == null){
+                tf_loadQueryFile.setText("");
+            }else{
+                tf_loadQueryFile.setText(selectedDirectory.getAbsolutePath());
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
+
+    public void cityChoose(ActionEvent actionEvent){
+
     }
 }
 
