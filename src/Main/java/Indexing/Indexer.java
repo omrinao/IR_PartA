@@ -350,7 +350,7 @@ public class Indexer implements Runnable {
             path = WORKING_DIRECTORY + DOC_POSTING + TXT;
 
         try(
-                BufferedWriter bw = new BufferedWriter(new FileWriter(path))
+                BufferedWriter bw = new BufferedWriter(new PrintWriter(path, "UTF-8"))
                 ){
             TreeMap<Integer, PostingDocData> sorted = new TreeMap<>(_docData);
 
@@ -371,7 +371,7 @@ public class Indexer implements Runnable {
      */
     private void writePartialPosting(String partialName) throws IOException {
         try(
-                BufferedWriter lowerWriter = new BufferedWriter(new PrintWriter(partialName))
+                BufferedWriter lowerWriter = new BufferedWriter(new PrintWriter(partialName, "UTF-8"))
         ){
             // init an ordered map with comperator for strings ignoring upper/lower cases
             TreeMap<String, TreeSet<PostingTermData>> orderedPartialPosting = new TreeMap<>(new Comparator<String>() {
