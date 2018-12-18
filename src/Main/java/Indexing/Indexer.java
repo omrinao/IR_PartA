@@ -155,7 +155,7 @@ public class Indexer implements Runnable {
                         else {
                             docsLocations.put(d.getDocNum(), null);
                         }
-                        cityPattern = Character.toUpperCase(city.charAt(0)) + city.substring(1);
+                        cityPattern = Character.toUpperCase(city.charAt(0)) + city.substring(1).toLowerCase();
                         if (_cityDictionary.get(cityPattern) == null) {//city dictionary does not contains the city
                             if (_cityIndex.getDetails(cityPattern)[0] == null) {//its not a capital city
                                 _cityDictionary.put(cityPattern, new CityDetails(null, null, null, docsLocations));//inserting just the city name and the document number
@@ -227,7 +227,7 @@ public class Indexer implements Runnable {
         if (pattern.matcher(valueToReturn).matches())//city contains number
             return "";
 
-        if (valueToReturn.equals("the") || valueToReturn.equals("THE") || valueToReturn.equals("FOR"))
+        if (valueToReturn.equalsIgnoreCase("the") || valueToReturn.equals("FOR"))
             return "";
 
         return valueToReturn;
@@ -445,16 +445,17 @@ public class Indexer implements Runnable {
     public int getNumOfTerms(){return _corpusDictionary.size();}
 
     public HashSet<String> get_docLanguages(){return _docLanguages;}
+    /*
+        public static void dataForReport(){
+            try {
+                System.out.println("arting");
 
-    public static void dataForReport(){
-        try {
-            System.out.println("Starting");
+                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("d:\\documents\\users\\tamiry\\Downloads\\STEMTermsDictionary"));
+                HashMap<String, TermData> loadedDict = (HashMap<String, TermData>) inputStream.readObject();
+                inputStream.close();
+                System.out.println("Number of unique terms with stemming: " + loadedDict.size());
 
-            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\omri\\Desktop\\IR_PartA\\TermsDictionary"));
-            HashMap<String, TermData> loadedDict = (HashMap<String, TermData>) inputStream.readObject();
-            inputStream.close();
-
-            ObjectInputStream inputStream2 = new ObjectInputStream(new FileInputStream("C:\\Users\\omri\\Desktop\\IR_PartA\\CityDictionary"));
+            ObjectInputStream inputStream2 = new ObjectInputStream(new FileInputStream("d:\\documents\\users\\tamiry\\Downloads\\CityDictionary"));
             HashMap<String, CityDetails> cityDict = (HashMap<String, CityDetails>) inputStream2.readObject();
             inputStream2.close();
 
@@ -468,11 +469,11 @@ public class Indexer implements Runnable {
             ArrayList<Integer> mostCityLocations = null;
             for (String s :
                     cityDict.keySet()){
-                //System.out.println(String.format("City name: %s",s));
+                System.out.println(String.format("City name: %s",s));
                 totalCities++;
                 CityDetails cd = cityDict.get(s);
                 if (cd.get_country() != null){
-                  //  System.out.println("  and is capital");
+                    System.out.println("  and is capital");
                     capitalCities++;
                 }
 
@@ -495,14 +496,6 @@ public class Indexer implements Runnable {
             System.out.println(String.format("\t The city name: %s", city));
             System.out.println(String.format("\t The locations are: %s", mostCityLocations.toString()));
 
-            System.out.println(mostCityLocations.size());
-/*
-            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\STEMTermsDictionary"));
-            HashMap<String, TermData> loadedDict = (HashMap<String, TermData>) inputStream.readObject();
-            inputStream.close();
-
-            System.out.println(loadedDict.size());
-*/
         } catch (IOException e) {
             System.out.println("Error at opening file: " + e.getMessage());
 
@@ -512,4 +505,21 @@ public class Indexer implements Runnable {
 
 
     }
+    public static void writeCSV(HashMap<String, TermData> termsMap, String path) {
+
+        try (
+                PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(path)))
+        ) {
+            for (String s :
+                    termsMap.keySet()) {
+                pw.println(String.format("%s,%s", s, termsMap.get(s).m_totalTF));
+            }
+            pw.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    */
+
 }

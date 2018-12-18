@@ -27,6 +27,7 @@ public class View implements Observer {
     @FXML
     public TextField corpus;
     public TextField dictpost;
+    public TextField tf_loadQueryFile;
     public CheckBox stemming;
 
     public javafx.scene.control.ChoiceBox _languageChoice;
@@ -169,7 +170,7 @@ public class View implements Observer {
         TreeMap<String, TermData> sorted = new TreeMap<>(new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
-                return o1.compareToIgnoreCase(o2);
+                return o1.compareTo(o2);
             }
         });
         sorted.putAll(unsortedDict);
@@ -245,6 +246,32 @@ public class View implements Observer {
 
         prob.setContentText(description);
         prob.showAndWait();
+    }
+
+    /**
+     * this method will allow the user to select a directory from the computer
+     * @param actionEvent
+     */
+    public void queryChoose(ActionEvent actionEvent) {
+
+        try {
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            File selectedDirectory =
+                    directoryChooser.showDialog(Main.pStage);
+
+            if(selectedDirectory == null){
+                tf_loadQueryFile.setText("");
+            }else{
+                tf_loadQueryFile.setText(selectedDirectory.getAbsolutePath());
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
+
+    public void cityChoose(ActionEvent actionEvent){
+
     }
 }
 

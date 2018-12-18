@@ -19,7 +19,7 @@ public class Main extends Application {
         FXMLLoader fxml = new FXMLLoader(getClass().getResource("/MainView.fxml"));
         Parent root = fxml.load();
         primaryStage.setTitle("IR 2019");
-        Scene scene = new Scene(root, 750, 500);
+        Scene scene = new Scene(root, 900, 450);
         scene.getStylesheets().add(getClass().getResource("/ViewStyle.css").toExternalForm());
         primaryStage.setScene(scene);
 
