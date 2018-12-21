@@ -27,6 +27,14 @@ public class PostingTermData implements Comparable {
 
     }
 
+    public PostingTermData(String docNum, int occurrences, byte first20, byte last20){
+        _doc = docNum;
+        _termOccurrences = occurrences;
+        _locations = new byte[2];
+        _locations[0] = first20;
+        _locations[1] = last20;
+    }
+
 
 
     /**
@@ -44,5 +52,29 @@ public class PostingTermData implements Comparable {
         PostingTermData other = (PostingTermData) o;
 
         return _doc.compareTo(other._doc);
+    }
+
+
+    public String get_doc(){return _doc;}
+
+
+    public void set_doc(String _doc) {
+        this._doc = _doc;
+    }
+
+    public int get_termOccurrences() {
+        return _termOccurrences;
+    }
+
+    public void set_termOccurrences(int _termOccurrences) {
+        this._termOccurrences = _termOccurrences;
+    }
+
+    public byte[] get_locations() {
+        return _locations;
+    }
+
+    public void set_locations(byte[] _locations) {
+        this._locations = _locations;
     }
 }

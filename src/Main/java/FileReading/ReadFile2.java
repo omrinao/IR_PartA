@@ -249,4 +249,25 @@ public class ReadFile2 implements Runnable {
     public void run () {
         getDocuments();
     }
+
+    /**
+     * method to get stop words
+     * @param corpusPath - the path of the corup
+     * @return - hash set of stop words
+     */
+    public static HashSet<String> getStopWords(String corpusPath){
+        HashSet<String> toReturn = new HashSet<>();
+        File f = new File(corpusPath + "stop_words.txt");
+        try (BufferedReader br = new BufferedReader(new FileReader(f))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                toReturn.add(line);
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return toReturn;
+    }
 }

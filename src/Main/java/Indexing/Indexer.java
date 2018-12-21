@@ -31,6 +31,7 @@ public class Indexer implements Runnable {
 
     private HashMap<Integer, PostingDocData> _docData;       // structure for docs posting data
     private HashSet<String> _docLanguages;                  // structure for docs languages
+    private double _avgDocLength;                           // avd doc length for later ranking
 
     public Indexer(int docsPerPartialPosting, String writingLocation) {
         this.WORKING_DIRECTORY = writingLocation;
@@ -54,6 +55,7 @@ public class Indexer implements Runnable {
      */
     public void indexDocuments(){
         int partialIndexed = 0;
+        double totalDocsLength = 0;
         while (true){
             Document d = null;
             try {
@@ -65,6 +67,7 @@ public class Indexer implements Runnable {
                 }
 
                 d.calcLength(); // setting length of the document for later use
+                totalDocsLength += d.getLength();
 
                 LinkedHashMap<String, ArrayList<Integer>> docTerms = d.getTermsMap();
                 for (String term: docTerms.keySet()) {//inserting to dictionary + partial posting
@@ -140,9 +143,11 @@ public class Indexer implements Runnable {
 
 
                 } // for end
+                String fixedCity = "";
                 // inserting to city dictionary
                 if (!d.getCity().isEmpty()) {//checking if <F P=104> label is exist
                     String city = fixCity(d.getCity());
+                    fixedCity = city;
                     if (!city.isEmpty()) {//fix city return a value
                         String cityPattern = "";//first uppercase then lowercase
                         HashMap<String, ArrayList<Integer>> docsLocations = new HashMap<>();
@@ -172,7 +177,7 @@ public class Indexer implements Runnable {
                 }
 
                 _docData.put(Integer.valueOf(d.getDocNum()),
-                        new PostingDocData(d.getMaxTF(), docTerms.size(), d.get_startLine(), d.get_endLine(), d.get_path(), d.getLength()));
+                        new PostingDocData(d.getMaxTF(), docTerms.size(), d.get_startLine(), d.get_endLine(), d.get_path(), d.getLength(), fixedCity));
 
                 if (!d.getLanguage().isEmpty()){
                     _docLanguages.add(d.getLanguage());
@@ -208,6 +213,8 @@ public class Indexer implements Runnable {
         writeDictionary();
         writeCityDictionary();
         writeLanguagesSet();
+        _avgDocLength = totalDocsLength/m_docsIndexed;
+
         System.out.println("Exiting Indexer");
 
         //System.out.println("Starting to extract data for report!");
@@ -227,7 +234,7 @@ public class Indexer implements Runnable {
         if (pattern.matcher(valueToReturn).matches())//city contains number
             return "";
 
-        if (valueToReturn.equalsIgnoreCase("the") || valueToReturn.equals("FOR"))
+        if (valueToReturn.equalsIgnoreCase("the") || valueToReturn.equalsIgnoreCase("FOR"))
             return "";
 
         return valueToReturn;
@@ -445,6 +452,10 @@ public class Indexer implements Runnable {
     public int getNumOfTerms(){return _corpusDictionary.size();}
 
     public HashSet<String> get_docLanguages(){return _docLanguages;}
+
+    public double getAvgDocLength() {
+        return _avgDocLength;
+    }
     /*
         public static void dataForReport(){
             try {
