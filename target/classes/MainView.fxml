@@ -109,7 +109,7 @@
                   </Label>
                   <TextField fx:id="tf_loadQueryFile" layoutX="184.0" layoutY="29.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                   <Button layoutX="357.0" layoutY="29.0" mnemonicParsing="false" onAction="#queryChoose" text="Browse" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="2" />
-                  <Button layoutX="343.0" layoutY="116.0" mnemonicParsing="false" text="Choose City" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <Button layoutX="343.0" layoutY="116.0" mnemonicParsing="false" onAction="#cityChoose" text="Choose City" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                </children>
             </GridPane>
          </right>
