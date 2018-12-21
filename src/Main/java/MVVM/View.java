@@ -1,9 +1,14 @@
 package MVVM;
 
 import Indexing.TermData;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -12,10 +17,16 @@ import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.CheckBoxListCell;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.io.File;
 import java.util.*;
@@ -33,6 +44,12 @@ public class View implements Observer {
     public javafx.scene.control.ChoiceBox _languageChoice;
     public ObservableList<String> _languagesList= FXCollections.observableArrayList();
     public ListView listView;
+
+    ArrayList<String> citiesSelected = new ArrayList<>();
+    ListView<CityFilter2> cityListView = new ListView<>();
+    public Button selectAll;
+    public Button deselectAll;
+    public Button confirm;
 
 
     public void setVm(ViewModel vm) {
@@ -271,7 +288,101 @@ public class View implements Observer {
 
 
     public void cityChoose(ActionEvent actionEvent){
+        try {
+            HashMap<String, ArrayList<Integer>> cities = new HashMap<>();//need to get hash map of cities
+            Stage cityStage = new Stage();
+            cityStage.setTitle("City Chooser");
 
+            for (int i=1; i<=10; i++) {
+                CityFilter2 item = new CityFilter2("Item "+i, false);
+
+                // observe item's on property and display message if it changes:
+                item.onProperty().addListener((obs, wasOn, isNowOn) -> {
+                    //System.out.println(item.getName() + " changed on state from "+wasOn+" to "+isNowOn);
+                    if (isNowOn && !citiesSelected.contains(item.getName()))
+                        citiesSelected.add(item.getName());
+                    else if (!isNowOn && citiesSelected.contains(item.getName()))
+                        citiesSelected.remove(item.getName());
+                });
+
+                cityListView.getItems().add(item);
+            }
+
+            cityListView.setCellFactory(CheckBoxListCell.forListView(new Callback<CityFilter2, ObservableValue<Boolean>>() {
+                @Override
+                public ObservableValue<Boolean> call(CityFilter2 item) {
+                    if (citiesSelected.contains(item.getName()))
+                        item.setOn(true);
+                    else
+                        item.setOn(false);
+                    return item.onProperty();
+                }
+            }));
+
+            selectAll = new Button("Select All");
+            deselectAll = new Button("Deselect All");
+            confirm = new Button("Confirm");
+            deselectAll.setMaxWidth(200);
+            BorderPane root = new BorderPane();
+            root.setLeft(cityListView);
+            VBox buttons = new VBox();
+            buttons.setPadding(new Insets(20,20,20,20));
+            buttons.getChildren().addAll(selectAll, deselectAll, confirm);
+            buttons.setSpacing(20);
+            root.setCenter(buttons);
+
+
+            selectAll.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    citiesSelected.clear();
+                    for (int i=1; i<=10; i++) {
+                        CityFilter2 item = new CityFilter2("Item "+i, true);
+                        citiesSelected.add(item.getName());
+                        cityListView.setCellFactory(CheckBoxListCell.forListView(new Callback<CityFilter2, ObservableValue<Boolean>>() {
+                            @Override
+                            public ObservableValue<Boolean> call(CityFilter2 item) {
+                                item.onProperty().set(true);
+                                return item.onProperty();
+                            }
+                        }));
+                    }
+                }
+            });
+
+            deselectAll.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    citiesSelected.clear();
+
+                    for (int i = 1; i <= 10; i++) {
+                        CityFilter2 item = new CityFilter2("Item " + i, false);
+
+                    cityListView.setCellFactory(CheckBoxListCell.forListView(new Callback<CityFilter2, ObservableValue<Boolean>>() {
+                        @Override
+                        public ObservableValue<Boolean> call(CityFilter2 item) {
+                            item.onProperty().set(false);
+                            return item.onProperty();
+                        }
+                    }));
+                    }
+                }
+            });
+
+            confirm.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    for (String s: citiesSelected) {
+                        System.out.println(s);
+                    }
+                }
+            });
+
+            Scene scene = new Scene(root, 420, 400);
+            cityStage.setScene(scene);
+            scene.getStylesheets().add(getClass().getResource("/ViewStyle.css").toExternalForm());
+            cityStage.show();
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 
