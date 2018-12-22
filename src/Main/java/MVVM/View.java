@@ -391,7 +391,7 @@ public class View implements Observer {
     }
 
     public void runQuery (ActionEvent actionEvent){
-        
+
     }
 }
 
