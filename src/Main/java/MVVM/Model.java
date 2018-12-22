@@ -5,6 +5,10 @@ import FileReading.ReadFile2;
 import Indexing.Indexer;
 import Indexing.TermData;
 import Parse.Parser;
+import Searching.IRanker;
+import Searching.RankerNoSemantics;
+import Searching.RetrievedDocument;
+import Searching.Searcher;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,9 +16,7 @@ import java.io.ObjectInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Observable;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -25,6 +27,9 @@ public class Model extends Observable {
     private String _writeTo;
     private HashMap<String, TermData> _loadedDict;
     private HashSet<String> _languagesFound;
+
+    private int _totalDocCount;
+    private double _avgDocLength;
 
 
     public Model(){
@@ -92,6 +97,8 @@ public class Model extends Observable {
 
         _languagesFound = indexer.get_docLanguages();
         _loadedDict = indexer._corpusDictionary;
+        _totalDocCount = indexer.getNumOfIndexed();
+        _avgDocLength = indexer.getAvgDocLength();
 
         long end = System.nanoTime();
         long total = end-start;
@@ -222,11 +229,19 @@ public class Model extends Observable {
     }
 
 
+    /**
+     * @return - languages found
+     */
     public HashSet<String> getLanguages() {
         return _languagesFound;
     }
 
-
+    /**
+     * method to retrieve terms dictionary
+     * @param stem - weather stemming is asked
+     * @param path - the path of the dic
+     * @return dictionary
+     */
     public HashMap<String, TermData> getTermDict(String stem, String path) {
         if (_loadedDict == null){
             String stemming = Boolean.valueOf(stem) ? "STEM" : "";
@@ -240,5 +255,29 @@ public class Model extends Observable {
         }
 
         return _loadedDict;
+    }
+
+    public PriorityQueue<RetrievedDocument> proccessQuery(String query, List<String> cities, boolean stemming){
+
+        IRanker r = new RankerNoSemantics(_loadedDict, cities, _totalDocCount, _avgDocLength, stemming, _writeTo);
+        Searcher s = new Searcher(r, ReadFile2.getStopWords(_corpusPath), stemming);
+
+        PriorityQueue<RetrievedDocument> top50 = s.getRelevantDocuments(query, cities);
+
+        return top50;
+    }
+
+
+    public static void main(String[] args){
+        Model m = new Model();
+
+        m._writeTo = "C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output";
+        m._corpusPath = "C:\\Users\\חגי קלינהוף\\Desktop\\שנה ג'\\סמסטר ה'\\אחזור מידע\\פרויקט מנוע\\Part 1 tests\\corpus";
+        String[] details = {"false", m._corpusPath, m._writeTo};
+        m.execute(details);
+
+        String query = "polytechnic Churchill trailblazer";
+        m.proccessQuery(query, null, false);
+
     }
 }
