@@ -342,7 +342,7 @@ public class Parser implements Runnable{
      * @param word2 - the examined word
      * @return - true if it fits, false otherwise
      */
-    private boolean priceOrNum(String word2) {
+    private static boolean priceOrNum(String word2) {
         switch (word2.toLowerCase()){
             case "thousand":
             case "million":
@@ -361,7 +361,7 @@ public class Parser implements Runnable{
      * @param s - the string to be converted to month
      * @return - converted month date
      */
-    private String getMonth(String s) {
+    private static String getMonth(String s) {
         switch (s.toLowerCase()){
             case "january":
             case "jan":
@@ -424,7 +424,7 @@ public class Parser implements Runnable{
      * @param text - the entire text
      * @return - the last idx of the date term
      */
-    private String isDate(int idx, String[] text){
+    private static String isDate(int idx, String[] text){
         String word = removePeriod(text[idx]);
         String valueToReturn = "";
         if (idx + 1 < text.length) {
@@ -466,7 +466,7 @@ public class Parser implements Runnable{
      * @param text - the entire text
      * @return - the string of the term
      */
-    private String isDateRange(int idx, String[] text){
+    private static String isDateRange(int idx, String[] text){
         String valueToReturn = "";
         String [] startToEnd; // array that represent the range of days in the month
         String month = "";
@@ -498,7 +498,7 @@ public class Parser implements Runnable{
      * @param text - the entire text
      * @return - the idx of the final word observed
      */
-    private String isPrice (int idx, String[] text) throws Exception {
+    private static String isPrice (int idx, String[] text) throws Exception {
         String valueToReturn = "";
         ArrayList<String> priceTerm = new ArrayList<String>();
 
@@ -608,7 +608,7 @@ public class Parser implements Runnable{
      * @param s - array list of the price range term
      * @return - the string of the term
      */
-    private String isPriceRange(ArrayList<String> s) {
+    private static String isPriceRange(ArrayList<String> s) {
         boolean isInt1 = false, isInt2 = false;
         String valueToReturn = "";
         if (s.get(0).contains("-")){ //a range
@@ -695,7 +695,7 @@ public class Parser implements Runnable{
      * @param text - the entire text
      * @return - the idx of the final word observed
      */
-    private String isPercentage (int idx, String[] text, String word){
+    private static String isPercentage (int idx, String[] text, String word){
         String valueToReturn = "";
         try {
             if (word.contains("%")){
@@ -729,7 +729,7 @@ public class Parser implements Runnable{
      * @param text - the entire text
      * @return - the idx of the final word observed
      */
-    private String isNumber (int idx, String[] text){
+    private static String isNumber (int idx, String[] text){
         String valueToReturn = "";
         try {
             float value = Float.valueOf(removePeriod(text[idx]));
@@ -829,7 +829,7 @@ public class Parser implements Runnable{
      * @param text - the entire text
      * @return - the idx of the final word observed
      */
-    private String isNumber2 (int idx, String[] text, String word){
+    private static String isNumber2 (int idx, String[] text, String word){
         String valueToReturn = "";
         try {
             float value = Float.valueOf(word);
@@ -1039,6 +1039,275 @@ public class Parser implements Runnable{
     @Override
     public void run() {
         parseDocument();
+    }
+
+
+
+    public static HashMap<String, IntWrapper> parseQuery(String query, boolean _stemmer, HashSet<String> stopWords){
+        query = query.replace(",", "");
+        String[] words = query.split("\\s+");
+        HashMap<String, IntWrapper> parsedQuery = new HashMap<>();
+
+        for (int i = 0; i < words.length; i++) {
+            try {
+                String finalTerm = null;
+                String word = words[i];
+                int finalIdx = words.length - 1;
+                boolean wordInsert = false;
+                boolean monthFix = false;
+
+                word = removePeriod(word);
+                /* this could be an extra rule */
+                if (word.toLowerCase().endsWith("'s")){
+                    word = word.substring(0, word.length()-2);
+                }
+                if (word.isEmpty())
+                    continue;
+
+                if (word.contains("$")) {
+
+                    finalTerm = isPrice(i, words);
+                    if (i + 1 <= finalIdx && priceOrNum(removePeriod(words[i + 1])))
+                        i++;
+                } else if (word.contains("%"))
+                    finalTerm = isPercentage(i, words, word);
+
+                else if (word.toLowerCase().equals("between") && i + 3 <= finalIdx) {
+                    if (isNumericValue(words[i + 1])) {
+                        String num1ID = words[i + 2];
+                        if (priceOrNum(num1ID)) { // number 1 has ID
+                            String[] firstArgPieces = {words[i + 1], num1ID};
+                            String firstArg = isNumber(0, firstArgPieces);
+
+                            if (words[i + 3].toLowerCase().equals("and")) { // continued by 'and'
+                                if (i + 4 <= finalIdx && isNumericValue(words[i + 4])) { // after and is numeric
+                                    if (i + 5 <= finalIdx && priceOrNum(words[i + 5])) { // checking for ID
+                                        String[] secondArgPieces = {words[i + 4], words[i + 5]};
+                                        String secondArg = "" + isNumber(0, secondArgPieces);
+
+                                        finalTerm = word + " " + firstArg + " and " + secondArg;
+                                        i = i + 5;
+                                    } else {
+                                        finalTerm = word + " " + firstArg + " and " + words[i + 4];
+                                        i = i + 4;
+                                    }
+                                }
+                            }
+                        } else if (words[i + 2].toLowerCase().equals("and")) { // no ID, continued by and
+                            String[] firstArgPieces2 = {words[i + 1]};
+                            String firstArg2 = isNumber(0, firstArgPieces2);
+                            if (isNumericValue(words[i + 3])) {
+                                if (i + 4 <= finalIdx && priceOrNum(words[i + 4])) { // second num has ID
+                                    String[] secondArgPieces2 = {words[i + 3], words[i + 4]};
+                                    String secondArg2 = isNumber(0, secondArgPieces2);
+
+
+                                    finalTerm = word + " " + firstArg2 + " and " + secondArg2;
+                                    i = i + 4;
+                                } else {
+                                    finalTerm = word + " " + firstArg2 + " and " + words[i + 3];
+                                    i = i + 3;
+                                }
+                            }
+                        }
+                    }
+                } else if (!getMonth(word).isEmpty()) {
+                    if (i + 1 <= finalIdx && isNumericValue(removePeriod(words[i + 1]))) {
+                        finalTerm = isDate(i, words);
+                        i++;
+                    } else if (i + 1 <= finalIdx && words[i + 1].contains("-")) {
+                        finalTerm = isDateRange(i, words);
+                        i++;
+                    } else {
+                        finalTerm = word;
+                        monthFix = true;
+                    }
+                } else if (isNumericValue(word)) { // the first word is numeric
+
+                    if (i + 1 <= finalIdx) {
+                        String word2 = removePeriod(words[i + 1]);
+
+                        if (word2.toLowerCase().equals("percent") || word2.toLowerCase().equals("percentage")) {// it's perecnt type
+                            Float f = Float.valueOf(word);
+                            if (f == f.intValue())
+                                finalTerm = f.intValue() + "%";
+                            else
+                                finalTerm = f +"%";
+                            i++;
+
+
+                        } else if (!getMonth(word2).isEmpty()) {// it's date type
+                            finalTerm = isDate(i, words);
+                            i++;
+
+                        } else if (priceOrNum(word2)) { // it's price or number. WON'T be range since range contains '-'
+                            if (i + 2 <= finalIdx) { // has 3rd word
+                                String word3 = removePeriod(words[i + 2].toLowerCase());
+                                if (word3.equals("dollars")) {// word 3 is dollars
+                                    finalTerm = isPrice(i, words);
+                                    i = i + 2;
+                                } else if (word3.equals("u.s")) { // word 3 is u.s
+                                    if (i + 3 <= finalIdx && removePeriod(words[i + 3].toLowerCase()).equals("dollars")) {
+                                        finalTerm = isPrice(i, words);
+                                        i = i + 3;
+                                    } else {
+                                        finalTerm = isNumber2(i, words, word);
+                                        i = i + 1;
+                                    }
+
+                                } else { // word3 is anything else
+                                    finalTerm = isNumber2(i, words, word);
+                                    i = i + 1;
+                                }
+                            } else { // does not have 3rd word
+                                finalTerm = isNumber2(i, words, word);
+                                i = i + 1;
+                            }
+                        } else if (word2.contains("-")) { // it's range
+                            String[] splitRange = word2.split("-");
+                            String firstArg = null;
+                            if (splitRange.length >= 2) {
+                                if (priceOrNum(splitRange[0])) { // first arg of range is number with ID
+                                    String[] number = {word, splitRange[0]};
+                                    firstArg = isNumber(0, number);
+
+                                    if (isNumericValue(splitRange[1])) { // second arg of range is number
+                                        if (i + 2 <= finalIdx && priceOrNum(words[i + 2])) {
+                                            String secondArg = null;
+                                            String[] number2 = {splitRange[1], words[i + 2]};
+                                            secondArg = isNumber(0, number2);
+
+                                            finalTerm = "" + firstArg + "-" + secondArg;
+                                            i = i + 2;
+                                        } else { // second arg is number but not priceOrNum
+                                            finalTerm = firstArg + "-" + splitRange[1];
+                                            i = i + 1;
+                                        }
+                                    } else {
+                                        finalTerm = firstArg + "-" + splitRange[1];
+                                        i = i + 1;
+                                    }
+                                } else {
+                                    finalTerm = isNumber2(i, words, word); // do not advance idx
+                                }
+                            }
+                        } else {
+                            finalTerm = isNumber2(i, words, word);
+                        }
+                    } else
+                        finalTerm = isNumber2(i, words, word);
+                } else if (word.contains("-")) {
+                    // first arg is word. need to check if second arg is number
+                    String[] split3 = word.split("-");
+                    if (split3.length >= 2) {
+                /*
+                number w/o ID. for example: 6-7
+                 */
+                        String firstArg = null;
+                        String secondArg;
+                        if (isNumericValue(split3[0]))
+                            firstArg = split3[0];
+
+                        if (isNumericValue(split3[1])) { // second arg is numeric
+                            if (i + 1 <= finalIdx) {
+                                String word2 = removePeriod(words[i + 1]);
+                                if (priceOrNum(word2)) {
+                                    String[] number = {split3[1], word2};
+                                    secondArg = isNumber(0, number);
+
+                                    if (firstArg == null) { // type: w-m_i
+                                        finalTerm = split3[0] + "-" + secondArg;
+                                        i = i + 1;
+                                    } else { // type: m_i-m_i
+                                        finalTerm = firstArg + "-" + secondArg;
+                                        i = i + 1;
+                                    }
+                                } else if (!getMonth(word2).isEmpty()) {// date range case
+                                    finalTerm = isDateRange(i, words);
+                                } else {
+                                    finalTerm = word;
+                                }
+                            } else
+                                finalTerm = word;
+                        } else
+                            finalTerm = word;
+                    }
+                }
+
+
+                if (finalTerm == null || monthFix) {
+                    finalTerm = removePeriod2(word);
+                    if (stopWords.contains(word.toLowerCase())) // STOP WORD CASE
+                        continue;
+
+                    if (finalTerm.isEmpty() || finalTerm.length()==1){
+                        continue;
+                    }
+                    wordInsert = true;
+                    String firstLetter = "" + finalTerm.charAt(0);
+                    if (_stemmer) {//stemming case
+                        Stemmer stm = new Stemmer();
+                        char[] w = new char[50];
+                        int ch = finalTerm.charAt(0);
+                        if (Character.isLetter((char) ch)) {
+                            int j = 0;
+                            while (j < finalTerm.length()) {
+                                ch = finalTerm.charAt(j);
+                                ch = Character.toLowerCase((char) ch);
+                                w[j] = (char) ch;
+                                if (j < 50) j++;
+                            }
+                            for (int k = 0; k < finalTerm.length(); k++)
+                                stm.add(w[k]);
+
+                            stm.stem();
+                            finalTerm = stm.toString();
+                        }
+                    }
+
+                    if (firstLetter.equals(firstLetter.toUpperCase())) { // upper letter case
+                        if (parsedQuery.containsKey(finalTerm.toLowerCase())) {
+                            parsedQuery.get(finalTerm.toLowerCase()).increase();
+                        } else if (parsedQuery.containsKey(finalTerm.toUpperCase()))
+                            parsedQuery.get(finalTerm.toUpperCase()).increase();
+                        else {
+                            parsedQuery.put(finalTerm.toUpperCase(), new IntWrapper(1));
+                        }
+                    } else {
+                        if (parsedQuery.containsKey(finalTerm.toLowerCase()))
+                            parsedQuery.get(finalTerm.toLowerCase()).increase();
+                        else if (parsedQuery.containsKey(finalTerm.toUpperCase())) {
+                            IntWrapper termLoc = parsedQuery.remove(finalTerm.toUpperCase());
+                            termLoc.increase();
+                            parsedQuery.put(finalTerm.toLowerCase(), termLoc);
+                        } else {
+                            parsedQuery.put(finalTerm.toLowerCase(), new IntWrapper(1));
+                        }
+                    }
+                }
+
+                if (!wordInsert && finalTerm != null) {
+                    finalTerm = removePeriod(finalTerm);
+                    if (stopWords.contains(word.toLowerCase())) // STOP WORD CASE
+                        continue;
+                    if (finalTerm.isEmpty() || finalTerm.length()==1){
+                        continue;
+                    }
+
+                    if (parsedQuery.containsKey(finalTerm)) {
+                        parsedQuery.get(finalTerm).increase();
+                    } else {
+                        parsedQuery.put(finalTerm, new IntWrapper(1));
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Problem at word: " + words[i]);
+                //System.out.println("At location: " + termLocation.get_value());
+            }
+        }
+
+        return parsedQuery;
     }
 
 }
