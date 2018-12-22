@@ -1,6 +1,7 @@
 package MVVM;
 
 import Indexing.TermData;
+import Searching.RetrievedDocument;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
@@ -38,7 +39,6 @@ public class View implements Observer {
     @FXML
     public TextField corpus;
     public TextField dictpost;
-    public TextField tf_loadQueryFile;
     public CheckBox stemming;
 
     public javafx.scene.control.ChoiceBox _languageChoice;
@@ -50,6 +50,10 @@ public class View implements Observer {
     public Button selectAll;
     public Button deselectAll;
     public Button confirm;
+
+    public TextField tf_enterQuery;
+    public TextField tf_loadQueryFile;
+    public ListView resultsListView = new ListView<>();
 
 
     public void setVm(ViewModel vm) {
@@ -235,7 +239,6 @@ public class View implements Observer {
         }
     }
 
-
     /**
      * generic method to pop problems
      * @param info - info that will be displayed
@@ -390,7 +393,61 @@ public class View implements Observer {
         }
     }
 
+
     public void runQuery (ActionEvent actionEvent){
+        ArrayList<RetrievedDocument> retrievedDocuments = new ArrayList<>();
+        ArrayList<Hyperlink> hyperlinks = new ArrayList<>();
+        if (tf_enterQuery.getText().isEmpty() && tf_loadQueryFile.getText().isEmpty()) {
+            popProblem("Enter query or load query file to run!");
+            return;
+        }
+        else if(!tf_enterQuery.getText().isEmpty() && !tf_loadQueryFile.getText().isEmpty()){
+            popProblem("Enter query OR load query file, you can not enter both!");
+            return;
+        }
+
+        else if (!tf_enterQuery.getText().isEmpty() && tf_loadQueryFile.getText().isEmpty()){
+            //citiesSelected
+            //retrievedDocuments = vm.getRetrievedDocuments(tf_enterQuery.getText());
+        }
+
+        else if (tf_enterQuery.getText().isEmpty() && !tf_loadQueryFile.getText().isEmpty()){
+            //citiesSelected
+            //retrievedDocuments = vm.getRetrievedDocuments(tf_enterQuery.getText());
+        }
+        try {
+            Stage resultStage = new Stage();
+            resultStage.setTitle("IR 2019");
+
+
+            hyperlinks.add(new Hyperlink("item 1"));
+            hyperlinks.add(new Hyperlink("item 2"));
+            hyperlinks.add(new Hyperlink("item 3"));
+            resultsListView.getItems().addAll(hyperlinks);
+
+            BorderPane root = new BorderPane();
+            root.setLeft(resultsListView);
+            VBox buttons = new VBox();
+
+            for (Hyperlink hl: hyperlinks) {
+                hl.setOnAction(new EventHandler<ActionEvent>() {
+
+                    @Override
+                    public void handle(ActionEvent t) {
+                        String docName = hl.getText();
+                        //open new stage and show the document
+                        //root.setRight();
+                    }
+                });
+            }
+
+
+            Scene scene = new Scene(root, 900, 450);
+            scene.getStylesheets().add(getClass().getResource("/ViewStyle.css").toExternalForm());
+            resultStage.setScene(scene);
+            resultStage.show();
+        }
+        catch (Exception e){}
 
     }
 }
