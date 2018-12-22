@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MVVM.View">
+   <children>
+      <BorderPane fx:id="bp_city" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <right>
+            <VBox prefHeight="360.0" prefWidth="142.0" BorderPane.alignment="CENTER">
+               <children>
+                  <Button fx:id="selectAll" mnemonicParsing="false" text="Select All" />
+                  <Button fx:id="deselectAll" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" text="Deselect All" />
+                  <Button fx:id="confirm" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" text="Confirm" />
+               </children>
+            </VBox>
+         </right>
+         <top>
+            <Pane prefHeight="40.0" prefWidth="600.0" BorderPane.alignment="CENTER" />
+         </top></BorderPane>
+   </children>
+</AnchorPane>
