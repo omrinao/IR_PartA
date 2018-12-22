@@ -36,12 +36,12 @@ public class IndexMerger {
 
         try {
             if (stemming){
-                _postingWriter = new BufferedWriter(new PrintWriter(WORKING_DIR + FINAL_Posting + "STEMM" + TXT));
+                _postingWriter = new BufferedWriter(new PrintWriter(WORKING_DIR + FINAL_Posting + "STEMM" + TXT, "UTF-8"));
             }
             else {
-                _postingWriter = new BufferedWriter(new PrintWriter(WORKING_DIR + FINAL_Posting + TXT));
+                _postingWriter = new BufferedWriter(new PrintWriter(WORKING_DIR + FINAL_Posting + TXT, "UTF-8"));
             }
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
 
@@ -71,8 +71,8 @@ public class IndexMerger {
                 public void accept(Path path) {
                     if (path.getName(path.getNameCount()-1).toString().startsWith("PartialPosting")) {
                         try {
-                            _postingReaders.add(new BufferedReader(new FileReader( path.toFile())));
-                        } catch (FileNotFoundException e) {
+                            _postingReaders.add(new BufferedReader(new InputStreamReader(new FileInputStream( path.toFile()), "UTF-8")));
+                        } catch (FileNotFoundException | UnsupportedEncodingException e) {
                             e.printStackTrace();
                         }
                         //System.out.println(path);

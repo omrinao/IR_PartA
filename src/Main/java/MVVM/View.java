@@ -286,7 +286,10 @@ public class View implements Observer {
         }
     }
 
-
+    /**
+     *this method will allow the user to choose city/cities to retrieve documents from
+     * @param actionEvent
+     */
     public void cityChoose(ActionEvent actionEvent){
         try {
             HashMap<String, ArrayList<Integer>> cities = new HashMap<>();//need to get hash map of cities
@@ -296,9 +299,7 @@ public class View implements Observer {
             for (int i=1; i<=10; i++) {
                 CityFilter2 item = new CityFilter2("Item "+i, false);
 
-                // observe item's on property and display message if it changes:
                 item.onProperty().addListener((obs, wasOn, isNowOn) -> {
-                    //System.out.println(item.getName() + " changed on state from "+wasOn+" to "+isNowOn);
                     if (isNowOn && !citiesSelected.contains(item.getName()))
                         citiesSelected.add(item.getName());
                     else if (!isNowOn && citiesSelected.contains(item.getName()))
@@ -308,6 +309,7 @@ public class View implements Observer {
                 cityListView.getItems().add(item);
             }
 
+            //set checkbox cell
             cityListView.setCellFactory(CheckBoxListCell.forListView(new Callback<CityFilter2, ObservableValue<Boolean>>() {
                 @Override
                 public ObservableValue<Boolean> call(CityFilter2 item) {
@@ -319,6 +321,7 @@ public class View implements Observer {
                 }
             }));
 
+            //set the controllers
             selectAll = new Button("Select All");
             deselectAll = new Button("Deselect All");
             confirm = new Button("Confirm");
@@ -331,7 +334,7 @@ public class View implements Observer {
             buttons.setSpacing(20);
             root.setCenter(buttons);
 
-
+            //select all cities
             selectAll.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
                     citiesSelected.clear();
@@ -349,6 +352,7 @@ public class View implements Observer {
                 }
             });
 
+            //deselect all cities
             deselectAll.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
                     citiesSelected.clear();
@@ -367,6 +371,7 @@ public class View implements Observer {
                 }
             });
 
+            //getting the selected cities from the user
             confirm.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
                     for (String s: citiesSelected) {
@@ -383,6 +388,10 @@ public class View implements Observer {
         } catch(Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void runQuery (ActionEvent actionEvent){
+
     }
 }
 
