@@ -1,6 +1,6 @@
 package Searching;
 
-import Indexing.PostingDocData;
+import Indexing.DocumentDictionary;
 import Indexing.PostingTermData;
 import Indexing.TermData;
 import Parse.IntWrapper;
@@ -11,6 +11,7 @@ import java.util.*;
 public abstract class ARanker implements IRanker  {
 
     protected HashMap<String, TermData> _corpusDictionary;
+    protected DocumentDictionary _documentDictionary;
     protected List<String> _cities;
     protected int _totalDocNum;
     protected double _avgDocLength;
@@ -23,11 +24,12 @@ public abstract class ARanker implements IRanker  {
     protected final String _txt = ".txt";
 
 
-    protected ARanker(HashMap<String, TermData> _corpusDictionary, List<String> _cities, int _totalDocNum, double _avgDocLength, boolean _stemming, String _outputPath) {
+    protected ARanker(HashMap<String, TermData> _corpusDictionary, List<String> _cities, DocumentDictionary docDict, boolean _stemming, String _outputPath) {
         this._corpusDictionary = _corpusDictionary;
         this._cities = _cities;
-        this._totalDocNum = _totalDocNum;
-        this._avgDocLength = _avgDocLength;
+        this._documentDictionary = docDict;
+        this._totalDocNum = docDict.get_totalDocCount();
+        this._avgDocLength = docDict.get_avgDocLength();
         this._stemming = _stemming;
         this._outputPath = _outputPath;
     }
@@ -107,7 +109,7 @@ public abstract class ARanker implements IRanker  {
     }
 
     /**
-     * given an ordered set of docNums will return thier posting data
+     * given an ordered set of docNums will return their posting data
      * @param docNums - ordered set of doc numbers
      * @return - set of the corresponding posting data
      */
@@ -120,21 +122,20 @@ public abstract class ARanker implements IRanker  {
         path = path+_txt;
 
         try (
-                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(path), "UTF-8"))
+                RandomAccessFile ra = new RandomAccessFile(path, "r")
                 ){
-            int lineCount = 0;
+            long pointer = 0;
             for (Integer doc :
                     docNums){
-                String data = null;
-                while (lineCount<=doc){
-                    data = br.readLine();
-                    lineCount++;
+                pointer = _documentDictionary.getPointer(doc);
+                String officialName = _documentDictionary.getName(doc);
+                if (pointer == -1){ // should never enter here
+                    System.out.println("document have not been processed properly" + doc);
+                    throw new IOException("bad pointer");
                 }
 
-                if (data == null){
-                    System.out.println("Error reading document posting");
-                    throw new IOException();
-                }
+                ra.seek(pointer);
+                String data = ra.readLine();
 
                 String[] docData = data.split(" ");
                 short startLine = Short.valueOf(docData[0]);
@@ -150,6 +151,10 @@ public abstract class ARanker implements IRanker  {
                     retrievedDocument.set_city(city);
                     retrievedDocument.set_docNum(String.valueOf(doc));
                     retrievedDocument.set_length(length);
+                    retrievedDocument.set_startLine(startLine);
+                    retrievedDocument.set_endLine(endLine);
+                    retrievedDocument.set_file(relative);
+                    retrievedDocument.set_docName(officialName);
 
                     matchingDoc.add(retrievedDocument);
                 }
@@ -157,6 +162,7 @@ public abstract class ARanker implements IRanker  {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println(e.getMessage());
         }
 
         return matchingDoc;

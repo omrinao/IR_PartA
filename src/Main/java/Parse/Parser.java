@@ -52,8 +52,11 @@ public class Parser implements Runnable{
                 }
                 d.setLanguage(removePeriod2(d.getLanguage()));
                 String allText = d.getText();
-                if (allText == null || allText.isEmpty())
+                if (allText == null || allText.isEmpty()){
+                    System.out.println("Skipped doc: " + d.getDocNum());
                     continue;
+                }
+
                 allText = allText.replace(",", "");
                 String[] words = allText.split("\\s+");
                 IntWrapper location = new IntWrapper(0);

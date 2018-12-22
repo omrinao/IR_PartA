@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 
 public class Document {
 
+    private String _docName;
     private String m_docNum;
     private String m_title;
     private String m_city;
@@ -96,18 +97,18 @@ public class Document {
      * @param sub - substring of the full document containing the headers
      */
     private void extractHeaders(String sub) {
-        /* int startIdx = sub.indexOf("<DOCNO>");
+        int startIdx = sub.indexOf("<DOCNO>");
         int endIdx = sub.indexOf("</DOCNO>");
         if (startIdx!=-1 &&
                 endIdx!=-1 &&
                 startIdx < endIdx)
-            m_docNum = sub.substring(startIdx + 7,endIdx).trim();
+            _docName = sub.substring(startIdx + 7,endIdx).trim();
         else
-            m_docNum = "";
-        */
+            _docName = "";
 
-        int startIdx = sub.indexOf("<DATE1>");
-        int endIdx = sub.indexOf("</DATE1>");
+
+        startIdx = sub.indexOf("<DATE1>");
+        endIdx = sub.indexOf("</DATE1>");
 
         startIdx = sub.indexOf("<TI>");
         endIdx = sub.indexOf("</TI>");
@@ -230,5 +231,11 @@ public class Document {
         }
     }
 
+    public String get_docName() {
+        return _docName;
+    }
 
+    public void set_docName(String _docName) {
+        this._docName = _docName;
+    }
 }

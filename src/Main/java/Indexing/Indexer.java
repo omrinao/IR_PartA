@@ -2,7 +2,6 @@ package Indexing;
 
 import FileReading.Document;
 import Parse.Parser;
-import javafx.scene.layout.Pane;
 
 import java.io.*;
 import java.util.*;
@@ -30,6 +29,7 @@ public class Indexer implements Runnable {
     private HashMap <String, CityDetails> _cityDictionary;   // structure for city details
 
     private HashMap<Integer, PostingDocData> _docData;       // structure for docs posting data
+    private DocumentDictionary _docDictionary;
     private HashSet<String> _docLanguages;                  // structure for docs languages
     private double _avgDocLength;                           // avd doc length for later ranking
 
@@ -46,6 +46,7 @@ public class Indexer implements Runnable {
 
         _docData = new HashMap<>();
         _docLanguages = new HashSet<>();
+        _docDictionary = new DocumentDictionary();
     }
 
 
@@ -176,7 +177,9 @@ public class Indexer implements Runnable {
                     }
                 }
 
-                _docData.put(Integer.valueOf(d.getDocNum()),
+                Integer docNum = Integer.valueOf(d.getDocNum());
+                _docDictionary.insertDoc(docNum, -1, d.get_docName());
+                _docData.put(docNum,
                         new PostingDocData(d.getMaxTF(), docTerms.size(), d.get_startLine(), d.get_endLine(), d.get_path(), d.getLength(), fixedCity));
 
                 if (!d.getLanguage().isEmpty()){
@@ -202,6 +205,7 @@ public class Indexer implements Runnable {
         writePartialPostings(); // after finished all documents, empty the final partial posting
 
         System.out.println("FINISHED INDEXING at: " + java.time.LocalTime.now());
+        System.out.println("doc indexed: "+m_docsIndexed);
         IndexMerger merger = new IndexMerger(WORKING_DIRECTORY, _corpusDictionary, _stemmer);
         try {
             merger.mergePostings();
@@ -210,10 +214,13 @@ public class Indexer implements Runnable {
         }
         //TreeMap<String, TermData> sorted = new TreeMap<>(_corpusDictionary);
 
+        _avgDocLength = totalDocsLength/m_docsIndexed;
+        _docDictionary.set_avgDocLength(_avgDocLength);
         writeDictionary();
+        writeDocDictionary();
         writeCityDictionary();
         writeLanguagesSet();
-        _avgDocLength = totalDocsLength/m_docsIndexed;
+
 
         System.out.println("Exiting Indexer");
 
@@ -223,8 +230,8 @@ public class Indexer implements Runnable {
 
     /**
      * this method receive a string which represents a city and fixes some problem that could be happen
-     * @param city
-     * @return
+     * @param city - the city
+     * @return - fixed city string
      */
     private String fixCity(String city) {
         String valueToReturn = Parser.removePeriod(city);
@@ -260,7 +267,7 @@ public class Indexer implements Runnable {
     /**
      * method that fix the population to x.yy M format
      * @param detail - the population
-     * @return
+     * @return - fixed population
      */
     private String fixPopulation(String detail) {
         float population = 0;
@@ -273,7 +280,7 @@ public class Indexer implements Runnable {
             }
         }
         catch (Exception e){
-
+            e.printStackTrace();
         }
 
         return valueToReturn;
@@ -293,6 +300,34 @@ public class Indexer implements Runnable {
 
         try(ObjectOutputStream write = new ObjectOutputStream(new FileOutputStream(path));) {
             write.writeObject(_corpusDictionary);
+            write.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * getter for document dictionary
+     * @return - document dictionary
+     */
+    public DocumentDictionary get_docDictionary() {
+        return _docDictionary;
+    }
+
+    /**
+     * method to write document dictionary to disk
+     */
+    private void writeDocDictionary() {
+        String path;
+        if (_stemmer){
+            path = WORKING_DIRECTORY + STEMMER + "DocsDictionary";
+        }
+        else{
+            path = WORKING_DIRECTORY + "DocsDictionary";
+        }
+
+        try(ObjectOutputStream write = new ObjectOutputStream(new FileOutputStream(path));) {
+            write.writeObject(_docDictionary);
             write.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -339,15 +374,17 @@ public class Indexer implements Runnable {
         }
         catch (IOException e){
             /* do something here */
+            e.printStackTrace();
         }
 
         _partialPostingCount++;
         _partialPosting.clear(); // maybe clear
+        _docData.clear(); // bug fix, need to test
     }
 
     /**
      * method to write to doc posting
-     * @throws IOException - if error occured duric writing
+     * @throws IOException - if error occurred during writing
      */
     private void writeToDocPosting() throws IOException{
         String path = null;
@@ -360,13 +397,20 @@ public class Indexer implements Runnable {
                 BufferedWriter bw = new BufferedWriter(new PrintWriter(path, "UTF-8"))
                 ){
             TreeMap<Integer, PostingDocData> sorted = new TreeMap<>(_docData);
+            long pointer = _docDictionary.get_nextPointer();
 
             for (Integer docNum :
                     sorted.keySet()) {
                 PostingDocData cur = sorted.get(docNum);
-                bw.append(String.format("%s\n", cur.toString()));
+                String postingToBeWritten = cur.toString() + "\n";
+                _docDictionary.getDocData(docNum)._pointer = pointer;
+                bw.append(postingToBeWritten);
+
+                pointer += postingToBeWritten.getBytes("UTF-8").length;
             }
             bw.flush();
+
+            _docDictionary.set_nextPointer(pointer);
         }
     }
 

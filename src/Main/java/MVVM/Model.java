@@ -2,6 +2,7 @@ package MVVM;
 
 import FileReading.Document;
 import FileReading.ReadFile2;
+import Indexing.DocumentDictionary;
 import Indexing.Indexer;
 import Indexing.TermData;
 import Parse.Parser;
@@ -10,9 +11,7 @@ import Searching.RankerNoSemantics;
 import Searching.RetrievedDocument;
 import Searching.Searcher;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,6 +25,7 @@ public class Model extends Observable {
     private String _corpusPath;
     private String _writeTo;
     private HashMap<String, TermData> _loadedDict;
+    private DocumentDictionary _loadedDocDict;
     private HashSet<String> _languagesFound;
 
     private int _totalDocCount;
@@ -97,6 +97,7 @@ public class Model extends Observable {
 
         _languagesFound = indexer.get_docLanguages();
         _loadedDict = indexer._corpusDictionary;
+        _loadedDocDict = indexer.get_docDictionary();
         _totalDocCount = indexer.getNumOfIndexed();
         _avgDocLength = indexer.getAvgDocLength();
 
@@ -259,7 +260,7 @@ public class Model extends Observable {
 
     public PriorityQueue<RetrievedDocument> proccessQuery(String query, List<String> cities, boolean stemming){
 
-        IRanker r = new RankerNoSemantics(_loadedDict, cities, _totalDocCount, _avgDocLength, stemming, _writeTo);
+        IRanker r = new RankerNoSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo);
         Searcher s = new Searcher(r, ReadFile2.getStopWords(_corpusPath), stemming);
 
         PriorityQueue<RetrievedDocument> top50 = s.getRelevantDocuments(query, cities);
@@ -271,13 +272,35 @@ public class Model extends Observable {
     public static void main(String[] args){
         Model m = new Model();
 
-        m._writeTo = "C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output";
+        m._writeTo = "C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\Doc Test";
         m._corpusPath = "C:\\Users\\חגי קלינהוף\\Desktop\\שנה ג'\\סמסטר ה'\\אחזור מידע\\פרויקט מנוע\\Part 1 tests\\corpus";
         String[] details = {"false", m._corpusPath, m._writeTo};
         m.execute(details);
 
-        String query = "polytechnic Churchill trailblazer";
-        m.proccessQuery(query, null, false);
 
+        String query = "polytechnic Churchill trailblazer";
+        PriorityQueue<RetrievedDocument> retrievedDocuments = m.proccessQuery(query, null, false);
+        while (!retrievedDocuments.isEmpty()){
+            System.out.println(retrievedDocuments.poll());
+        }
+/*
+        try (
+                BufferedWriter bw = new BufferedWriter(new PrintWriter("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\Doc Test\\doctest.txt"));
+                RandomAccessFile ra = new RandomAccessFile("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\Doc Test\\DocumentPosting.txt", "r");
+                ){
+
+            for (Integer id :
+                    m._loadedDocDict.getKeysSet()){
+                long pointer = m._loadedDocDict.getPointer(id);
+                ra.seek(pointer);
+
+                String capturedLine = ra.readLine();
+                bw.write(capturedLine+"\n");
+            }
+        }
+        catch (IOException e){
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }*/
     }
 }

@@ -1,5 +1,6 @@
 package Searching;
 
+import Indexing.DocumentDictionary;
 import Indexing.PostingTermData;
 import Indexing.TermData;
 import Parse.IntWrapper;
@@ -9,8 +10,8 @@ import java.util.*;
 
 public class RankerNoSemantics extends ARanker {
 
-    public RankerNoSemantics(HashMap<String, TermData> _corpusDictionary, List<String> _cities, int _totalDocNum, double _avgDocLength, boolean _stemming, String _outputPath) {
-        super(_corpusDictionary, _cities, _totalDocNum, _avgDocLength, _stemming, _outputPath);
+    public RankerNoSemantics(HashMap<String, TermData> _corpusDictionary, List<String> _cities, DocumentDictionary docDict, boolean _stemming, String _outputPath) {
+        super(_corpusDictionary, _cities, docDict, _stemming, _outputPath);
     }
 
 
