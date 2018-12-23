@@ -31,7 +31,7 @@
          <left>
             <VBox prefHeight="299.0" prefWidth="197.0" spacing="20.0" BorderPane.alignment="CENTER">
                <children>
-                  <ChoiceBox prefWidth="150.0" />
+                  <ChoiceBox fx:id="cb_queries" prefWidth="150.0" />
                   <ListView fx:id="resultsListView" prefHeight="200.0" prefWidth="200.0" />
                </children>
                <padding>

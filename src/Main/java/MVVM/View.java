@@ -33,6 +33,7 @@ public class View implements Observer {
     private ViewModel vm;
 
     @FXML
+    //controllers for part A (indexing)
     public TextField corpus;
     public TextField dictpost;
     public CheckBox stemming;
@@ -41,17 +42,20 @@ public class View implements Observer {
     public ObservableList<String> _languagesList= FXCollections.observableArrayList();
     public ListView listView;
 
+    //Controllers and data structures needed for city selection
     ArrayList<String> citiesSelected = new ArrayList<>();
     ListView<CityFilter2> cityListView = new ListView<>();
     public Button selectAll;
     public Button deselectAll;
     public Button confirm;
 
+    //Controllers for part B (searching + results)
     public TextField tf_enterQuery;
     public TextField tf_loadQueryFile;
     public ListView resultsListView = new ListView();
     public BorderPane bp_results;
     public TextArea textResults;
+    public ChoiceBox cb_queries;
 
 
     public void setVm(ViewModel vm) {
