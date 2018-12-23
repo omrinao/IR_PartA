@@ -8,9 +8,11 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxListCell;
@@ -290,12 +292,12 @@ public class View implements Observer {
      */
     public void cityChoose(ActionEvent actionEvent){
         try {
-            ArrayList<String> cities = new ArrayList<>();//need to get list of cities
+            TreeSet<String> cities = vm.getCities(dictpost.getText(), stemming.isSelected());//need to get list of cities
             Stage cityStage = new Stage();
             cityStage.setTitle("City Chooser");
 
-            for (int i=1; i<=10; i++) {
-                CityFilter2 item = new CityFilter2("Item "+i, false);
+            for (String city: cities) {
+                CityFilter2 item = new CityFilter2(city, false);
 
                 item.onProperty().addListener((obs, wasOn, isNowOn) -> {
                     if (isNowOn && !citiesSelected.contains(item.getName()))
@@ -336,8 +338,8 @@ public class View implements Observer {
             selectAll.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
                     citiesSelected.clear();
-                    for (int i=1; i<=10; i++) {
-                        CityFilter2 item = new CityFilter2("Item "+i, true);
+                    for (String city: cities) {
+                        CityFilter2 item = new CityFilter2(city, true);
                         citiesSelected.add(item.getName());
                         cityListView.setCellFactory(CheckBoxListCell.forListView(new Callback<CityFilter2, ObservableValue<Boolean>>() {
                             @Override
@@ -355,8 +357,8 @@ public class View implements Observer {
                 @Override public void handle(ActionEvent e) {
                     citiesSelected.clear();
 
-                    for (int i = 1; i <= 10; i++) {
-                        CityFilter2 item = new CityFilter2("Item " + i, false);
+                    for (String city: cities) {
+                        CityFilter2 item = new CityFilter2(city, false);
 
                     cityListView.setCellFactory(CheckBoxListCell.forListView(new Callback<CityFilter2, ObservableValue<Boolean>>() {
                         @Override
@@ -388,9 +390,15 @@ public class View implements Observer {
 
 
     public void runQuery (MouseEvent actionEvent){
-        actionEvent.consume();
-        ArrayList<RetrievedDocument> retrievedDocuments = new ArrayList<>();
+
+        PriorityQueue<RetrievedDocument> retrievedDocuments = new PriorityQueue<>();
         ArrayList<Hyperlink> hyperlinks = new ArrayList<>();
+
+        if (corpus.getText().isEmpty() || dictpost.getText().isEmpty()) {
+            popProblem("Enter corpus path and output directory!");
+            return;
+        }
+
         if (tf_enterQuery.getText().isEmpty() && tf_loadQueryFile.getText().isEmpty()) {
             popProblem("Enter query or load query file to run!");
             return;
@@ -401,50 +409,55 @@ public class View implements Observer {
         }
 
         else if (!tf_enterQuery.getText().isEmpty() && tf_loadQueryFile.getText().isEmpty()){
-            //citiesSelected
-            //retrievedDocuments = vm.getRetrievedDocuments(tf_enterQuery.getText());
+            retrievedDocuments = vm.processQuery(tf_enterQuery.getText(), citiesSelected, stemming.isSelected(), corpus.getText() + '\\');
         }
 
         else if (tf_enterQuery.getText().isEmpty() && !tf_loadQueryFile.getText().isEmpty()){
-            //citiesSelected
-            //retrievedDocuments = vm.getRetrievedDocuments(tf_enterQuery.getText());
+            //retrievedDocuments = vm.proccessQuery(tf_loadQueryFile.getText(), citiesSelected, stemming.isSelected());
         }
-        try {
+
+        final PriorityQueue<RetrievedDocument> finRetrievedDocuments = retrievedDocuments;//for handle method
+
+        try{
             Stage resultStage = new Stage();
             resultStage.setTitle("IR 2019");
             FXMLLoader fxml = new FXMLLoader(getClass().getResource("/resultsView.fxml"));
             Parent root = fxml.load();
             View newController = fxml.getController();
             bp_results = new BorderPane();
+            textResults = new TextArea();
 
-            for (RetrievedDocument retDoc: retrievedDocuments) {
-                hyperlinks.add(new Hyperlink(retDoc.get_officialName()));
+            for (RetrievedDocument retDoc: finRetrievedDocuments) {
+                hyperlinks.add(new Hyperlink(retDoc.get_docName()));
             }
-            hyperlinks.add(new Hyperlink("item 1"));
-            hyperlinks.add(new Hyperlink("item 2"));
-            hyperlinks.add(new Hyperlink("item 3"));
+
             newController.resultsListView.getItems().addAll(hyperlinks);
 
-            for (Hyperlink hl: hyperlinks) {
+            for (Hyperlink hl: hyperlinks){
                 hl.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent t) {
                         String docName = hl.getText();
-                        for (RetrievedDocument rd: retrievedDocuments) {
-                            if (rd.get_officialName().equals(docName)){
-                                newController.textResults.setText(rd.get_text());
+                        for (RetrievedDocument rd : finRetrievedDocuments) {
+                            if (rd.get_docName().equals(docName)) {
+                                newController.textResults.setText("HELLO");
                                 break;
                             }
                         }
-                        System.out.println(docName);
+                    }
+                });
+            }
 
-
-            Scene scene = new Scene(root, 900, 450);
+            Scene scene = new Scene(root, 800, 450);
             scene.getStylesheets().add(getClass().getResource("/ViewStyle.css").toExternalForm());
             resultStage.setScene(scene);
             resultStage.show();
         }
-        catch (Exception e){}
+
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
 
     }
 
