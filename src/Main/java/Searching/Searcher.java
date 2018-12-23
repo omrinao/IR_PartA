@@ -26,6 +26,7 @@ public class Searcher {
 
     public PriorityQueue<RetrievedDocument> getRelevantDocuments(String query, List<String> cities) {
         HashMap<String, IntWrapper> parsedQuery = Parser.parseQuery(query, _stemming, _stopWords);
+        System.out.println("Finished query processing");
         return _ranker.rank(parsedQuery, cities);
     }
 

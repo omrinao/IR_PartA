@@ -29,8 +29,6 @@ public class Model extends Observable {
     private DocumentDictionary _loadedDocDict;
     private HashSet<String> _languagesFound;
 
-    private int _totalDocCount;
-    private double _avgDocLength;
 
 
     public Model(){
@@ -99,8 +97,6 @@ public class Model extends Observable {
         _languagesFound = indexer.get_docLanguages();
         _loadedDict = indexer._corpusDictionary;
         _loadedDocDict = indexer.get_docDictionary();
-        _totalDocCount = indexer.getNumOfIndexed();
-        _avgDocLength = indexer.getAvgDocLength();
 
         long end = System.nanoTime();
         long total = end-start;
@@ -186,7 +182,7 @@ public class Model extends Observable {
                 _loadedDict = (HashMap<String, TermData>) inputStream.readObject();
                 inputStream.close();
 
-                inputStream = new ObjectInputStream(new FileInputStream(loadFrom + "STEMDocDictionary"));
+                inputStream = new ObjectInputStream(new FileInputStream(loadFrom + "STEMDocsDictionary"));
                 _loadedDocDict = (DocumentDictionary) inputStream.readObject();
                 inputStream.close();
 
@@ -208,10 +204,12 @@ public class Model extends Observable {
                 ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(loadFrom + "TermsDictionary"));
                 _loadedDict = (HashMap<String, TermData>) inputStream.readObject();
                 inputStream.close();
+                System.out.println("Loaded terms dictionary");
 
-                inputStream = new ObjectInputStream(new FileInputStream(loadFrom + "DocDictionary"));
+                inputStream = new ObjectInputStream(new FileInputStream(loadFrom + "DocsDictionary"));
                 _loadedDocDict = (DocumentDictionary) inputStream.readObject();
                 inputStream.close();
+                System.out.println("Loaded docs dictionary");
 
                 setChanged();
                 notifyObservers("Dictionary without stemming loaded!");
@@ -279,6 +277,7 @@ public class Model extends Observable {
         IRanker r = new RankerNoSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo);
         Searcher s = new Searcher(r, ReadFile2.getStopWords(_corpusPath), stemming);
 
+        System.out.println("Starting to search and rank");
         PriorityQueue<RetrievedDocument> top50 = s.getRelevantDocuments(query, cities);
 
         return top50;
@@ -329,17 +328,24 @@ public class Model extends Observable {
     public static void main(String[] args){
         Model m = new Model();
 
-        m._writeTo = "C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\Doc Test";
-        m._corpusPath = "C:\\Users\\חגי קלינהוף\\Desktop\\שנה ג'\\סמסטר ה'\\אחזור מידע\\פרויקט מנוע\\Part 1 tests\\corpus";
+        m._writeTo = "C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\";
+        m._corpusPath = "C:\\Users\\חגי קלינהוף\\Desktop\\שנה ג'\\סמסטר ה'\\אחזור מידע\\פרויקט מנוע\\Part 1 tests\\corpus\\";
         String[] details = {"false", m._corpusPath, m._writeTo};
         m.loadDict(details);
 
 
-        String query = "polytechnic Churchill trailblazer";
-        PriorityQueue<RetrievedDocument> retrievedDocuments = m.proccessQuery(query, null, false);
-        while (!retrievedDocuments.isEmpty()){
-            System.out.println(retrievedDocuments.poll());
-        }
+        String query = "blood-alcohol fatalities";
+        PriorityQueue<RetrievedDocument> retrievedDocuments = m.proccessQuery(query, new ArrayList<>(), false);
+        TreeSet<RetrievedDocument> sorted = new TreeSet<>(new Comparator<RetrievedDocument>() {
+            @Override
+            public int compare(RetrievedDocument o1, RetrievedDocument o2) {
+                return o1.get_docName().compareTo(o2.get_docName());
+            }
+        });
+        sorted.addAll(retrievedDocuments);
+        for (RetrievedDocument d:
+                sorted)
+            System.out.println(d);
 /*
         try (
                 BufferedWriter bw = new BufferedWriter(new PrintWriter("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\Doc Test\\doctest.txt"));
