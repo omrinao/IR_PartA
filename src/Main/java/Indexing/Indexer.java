@@ -394,7 +394,7 @@ public class Indexer implements Runnable {
             path = WORKING_DIRECTORY + DOC_POSTING + TXT;
 
         try(
-                BufferedWriter bw = new BufferedWriter(new PrintWriter(path, "UTF-8"))
+                BufferedWriter bw = new BufferedWriter(new PrintWriter(new FileWriter(path, true)))
                 ){
             TreeMap<Integer, PostingDocData> sorted = new TreeMap<>(_docData);
             long pointer = _docDictionary.get_nextPointer();

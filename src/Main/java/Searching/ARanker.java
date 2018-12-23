@@ -146,7 +146,7 @@ public abstract class ARanker implements IRanker  {
                 int length = Integer.valueOf(docData[5]);
                 String city = docData[6];
 
-                if (_cities==null || _cities.contains(city)){
+                if (_cities.isEmpty() || _cities.contains(city)){
                     RetrievedDocument retrievedDocument = new RetrievedDocument();
                     retrievedDocument.set_city(city);
                     retrievedDocument.set_docNum(String.valueOf(doc));
