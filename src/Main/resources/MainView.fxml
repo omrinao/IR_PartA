@@ -95,8 +95,8 @@
                         <Font name="Calibri Bold" size="16.0" />
                      </font>
                   </Label>
-                  <TextField GridPane.columnIndex="1" />
-                  <Button mnemonicParsing="false" text="Run Query" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="4" GridPane.valignment="CENTER" />
+                  <TextField fx:id="tf_enterQuery" GridPane.columnIndex="1" />
+                  <Button mnemonicParsing="false" onAction="#runQuery" text="Run Query" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="4" GridPane.valignment="CENTER" />
                   <Label text="OR" textFill="WHITE" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1">
                      <font>
                         <Font name="Calibri Bold" size="16.0" />

@@ -1,6 +1,7 @@
 package MVVM;
 
 import Indexing.TermData;
+import Searching.RetrievedDocument;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
@@ -38,7 +39,6 @@ public class View implements Observer {
     @FXML
     public TextField corpus;
     public TextField dictpost;
-    public TextField tf_loadQueryFile;
     public CheckBox stemming;
 
     public javafx.scene.control.ChoiceBox _languageChoice;
@@ -50,6 +50,12 @@ public class View implements Observer {
     public Button selectAll;
     public Button deselectAll;
     public Button confirm;
+
+    public TextField tf_enterQuery;
+    public TextField tf_loadQueryFile;
+    public ListView resultsListView = new ListView();
+    public BorderPane bp_results;
+    public TextArea textResults;
 
 
     public void setVm(ViewModel vm) {
@@ -235,7 +241,6 @@ public class View implements Observer {
         }
     }
 
-
     /**
      * generic method to pop problems
      * @param info - info that will be displayed
@@ -292,7 +297,7 @@ public class View implements Observer {
      */
     public void cityChoose(ActionEvent actionEvent){
         try {
-            HashMap<String, ArrayList<Integer>> cities = new HashMap<>();//need to get hash map of cities
+            ArrayList<String> cities = new ArrayList<>();//need to get list of cities
             Stage cityStage = new Stage();
             cityStage.setTitle("City Chooser");
 
@@ -374,9 +379,7 @@ public class View implements Observer {
             //getting the selected cities from the user
             confirm.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                    for (String s: citiesSelected) {
-                        System.out.println(s);
-                    }
+                    cityStage.close();
                 }
             });
 
@@ -390,8 +393,72 @@ public class View implements Observer {
         }
     }
 
-    public void runQuery (ActionEvent actionEvent){
 
+    public void runQuery (ActionEvent actionEvent){
+        ArrayList<RetrievedDocument> retrievedDocuments = new ArrayList<>();
+        ArrayList<Hyperlink> hyperlinks = new ArrayList<>();
+        if (tf_enterQuery.getText().isEmpty() && tf_loadQueryFile.getText().isEmpty()) {
+            popProblem("Enter query or load query file to run!");
+            return;
+        }
+        else if(!tf_enterQuery.getText().isEmpty() && !tf_loadQueryFile.getText().isEmpty()){
+            popProblem("Enter query OR load query file, you can not enter both!");
+            return;
+        }
+
+        else if (!tf_enterQuery.getText().isEmpty() && tf_loadQueryFile.getText().isEmpty()){
+            //citiesSelected
+            //retrievedDocuments = vm.getRetrievedDocuments(tf_enterQuery.getText());
+        }
+
+        else if (tf_enterQuery.getText().isEmpty() && !tf_loadQueryFile.getText().isEmpty()){
+            //citiesSelected
+            //retrievedDocuments = vm.getRetrievedDocuments(tf_enterQuery.getText());
+        }
+        try {
+            Stage resultStage = new Stage();
+            resultStage.setTitle("IR 2019");
+            FXMLLoader fxml = new FXMLLoader(getClass().getResource("/resultsView.fxml"));
+            Parent root = fxml.load();
+            View newController = fxml.getController();
+            bp_results = new BorderPane();
+
+            for (RetrievedDocument retDoc: retrievedDocuments) {
+                hyperlinks.add(new Hyperlink(retDoc.get_officialName()));
+            }
+            hyperlinks.add(new Hyperlink("item 1"));
+            hyperlinks.add(new Hyperlink("item 2"));
+            hyperlinks.add(new Hyperlink("item 3"));
+            newController.resultsListView.getItems().addAll(hyperlinks);
+
+            for (Hyperlink hl: hyperlinks) {
+                hl.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent t) {
+                        String docName = hl.getText();
+                        for (RetrievedDocument rd: retrievedDocuments) {
+                            if (rd.get_officialName().equals(docName)){
+                                newController.textResults.setText(rd.get_text());
+                                break;
+                            }
+                        }
+                        System.out.println(docName);
+                    }
+                });
+            }
+
+
+            Scene scene = new Scene(root, 900, 450);
+            scene.getStylesheets().add(getClass().getResource("/ViewStyle.css").toExternalForm());
+            resultStage.setScene(scene);
+            resultStage.show();
+        }
+        catch (Exception e){}
+
+    }
+
+    private void runQueryFile(){
+        
     }
 }
 
