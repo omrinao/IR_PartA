@@ -40,7 +40,7 @@ public class RankerNoSemantics extends ARanker {
         if (toReturn.size() > 50){
             PriorityQueue<RetrievedDocument> tmp = toReturn;
             toReturn = new PriorityQueue<>();
-            while ( toReturn.size() <= 50){
+            while ( toReturn.size() < 50){
                 toReturn.add(tmp.poll());
             }
         }
