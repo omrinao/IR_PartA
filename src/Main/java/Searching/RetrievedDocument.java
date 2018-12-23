@@ -7,20 +7,21 @@ public class RetrievedDocument implements Comparable{
     short _startLine;
     short _endLine;
     String _docNum;
+    String _docName;
     String _city;
     int _length;
     ArrayList<String> _strongEntities;
     double _rank;
 
     String _text;
-    String _officialName;
+    String _file;
 
-    public String get_officialName() {
-        return _officialName;
+    public String get_file() {
+        return _file;
     }
 
-    public void set_officialName(String _officialName) {
-        this._officialName = _officialName;
+    public void set_file(String _file) {
+        this._file = _file;
     }
 
     public double get_rank() {
@@ -91,6 +92,13 @@ public class RetrievedDocument implements Comparable{
         _rank+=v;
     }
 
+    public String get_docName() {
+        return _docName;
+    }
+
+    public void set_docName(String _docName) {
+        this._docName = _docName;
+    }
 
     /**
      * Compares this object with the specified object for order.  Returns a
@@ -134,5 +142,11 @@ public class RetrievedDocument implements Comparable{
     public int compareTo(Object o) {
         RetrievedDocument other = (RetrievedDocument) o;
         return Double.compare(other._rank, _rank);
+    }
+
+    @Override
+    public String toString(){
+        return String.format("Name: %s, File: %s, Start: %s, End: %s, Rank: %s, City: %s, Length: %s",
+                _docName, _file, _startLine, _endLine, _rank, _city, _length);
     }
 }

@@ -2,27 +2,20 @@ package MVVM;
 
 import Indexing.TermData;
 import Searching.RetrievedDocument;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxListCell;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
@@ -156,7 +149,7 @@ public class View implements Observer {
             stemming.setSelected(false);
 
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 
@@ -287,7 +280,7 @@ public class View implements Observer {
                 tf_loadQueryFile.setText(selectedDirectory.getAbsolutePath());
             }
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 
@@ -386,7 +379,7 @@ public class View implements Observer {
             Scene scene = new Scene(root, 420, 400);
             cityStage.setScene(scene);
             scene.getStylesheets().add(getClass().getResource("/ViewStyle.css").toExternalForm());
-            cityStage.show();
+            cityStage.showAndWait();
 
         } catch(Exception e) {
             e.printStackTrace();
@@ -394,7 +387,8 @@ public class View implements Observer {
     }
 
 
-    public void runQuery (ActionEvent actionEvent){
+    public void runQuery (MouseEvent actionEvent){
+        actionEvent.consume();
         ArrayList<RetrievedDocument> retrievedDocuments = new ArrayList<>();
         ArrayList<Hyperlink> hyperlinks = new ArrayList<>();
         if (tf_enterQuery.getText().isEmpty() && tf_loadQueryFile.getText().isEmpty()) {
@@ -443,9 +437,6 @@ public class View implements Observer {
                             }
                         }
                         System.out.println(docName);
-                    }
-                });
-            }
 
 
             Scene scene = new Scene(root, 900, 450);
