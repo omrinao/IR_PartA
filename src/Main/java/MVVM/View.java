@@ -46,7 +46,9 @@ public class View implements Observer {
 
     public TextField tf_enterQuery;
     public TextField tf_loadQueryFile;
-    public ListView resultsListView = new ListView<>();
+    public ListView resultsListView = new ListView();
+    public BorderPane bp_results;
+    public TextArea textResults;
 
 
     public void setVm(ViewModel vm) {
@@ -288,7 +290,7 @@ public class View implements Observer {
      */
     public void cityChoose(ActionEvent actionEvent){
         try {
-            HashMap<String, ArrayList<Integer>> cities = new HashMap<>();//need to get hash map of cities
+            ArrayList<String> cities = new ArrayList<>();//need to get list of cities
             Stage cityStage = new Stage();
             cityStage.setTitle("City Chooser");
 
@@ -370,9 +372,7 @@ public class View implements Observer {
             //getting the selected cities from the user
             confirm.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                    for (String s: citiesSelected) {
-                        System.out.println(s);
-                    }
+                    cityStage.close();
                 }
             });
 
@@ -412,28 +412,31 @@ public class View implements Observer {
         try {
             Stage resultStage = new Stage();
             resultStage.setTitle("IR 2019");
+            FXMLLoader fxml = new FXMLLoader(getClass().getResource("/resultsView.fxml"));
+            Parent root = fxml.load();
+            View newController = fxml.getController();
+            bp_results = new BorderPane();
 
-
+            for (RetrievedDocument retDoc: retrievedDocuments) {
+                hyperlinks.add(new Hyperlink(retDoc.get_officialName()));
+            }
             hyperlinks.add(new Hyperlink("item 1"));
             hyperlinks.add(new Hyperlink("item 2"));
             hyperlinks.add(new Hyperlink("item 3"));
-            resultsListView.getItems().addAll(hyperlinks);
-
-            BorderPane root = new BorderPane();
-            root.setLeft(resultsListView);
-            VBox buttons = new VBox();
+            newController.resultsListView.getItems().addAll(hyperlinks);
 
             for (Hyperlink hl: hyperlinks) {
                 hl.setOnAction(new EventHandler<ActionEvent>() {
-
                     @Override
                     public void handle(ActionEvent t) {
                         String docName = hl.getText();
-                        //open new stage and show the document
-                        //root.setRight();
-                    }
-                });
-            }
+                        for (RetrievedDocument rd: retrievedDocuments) {
+                            if (rd.get_officialName().equals(docName)){
+                                newController.textResults.setText(rd.get_text());
+                                break;
+                            }
+                        }
+                        System.out.println(docName);
 
 
             Scene scene = new Scene(root, 900, 450);
@@ -443,6 +446,10 @@ public class View implements Observer {
         }
         catch (Exception e){}
 
+    }
+
+    private void runQueryFile(){
+        
     }
 }
 
