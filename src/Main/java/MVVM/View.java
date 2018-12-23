@@ -20,6 +20,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -272,14 +273,14 @@ public class View implements Observer {
     public void queryChoose(ActionEvent actionEvent) {
 
         try {
-            DirectoryChooser directoryChooser = new DirectoryChooser();
-            File selectedDirectory =
-                    directoryChooser.showDialog(Main.pStage);
+            FileChooser fileChooser = new FileChooser();
+            File selectedFile =
+                    fileChooser.showOpenDialog(Main.pStage);
 
-            if(selectedDirectory == null){
+            if(selectedFile == null){
                 tf_loadQueryFile.setText("");
             }else{
-                tf_loadQueryFile.setText(selectedDirectory.getAbsolutePath());
+                tf_loadQueryFile.setText(selectedFile.getAbsolutePath());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -292,7 +293,7 @@ public class View implements Observer {
      */
     public void cityChoose(ActionEvent actionEvent){
         try {
-            TreeSet<String> cities = vm.getCities(dictpost.getText(), stemming.isSelected());//need to get list of cities
+            TreeSet<String> cities = vm.getCities(dictpost.getText(), stemming.isSelected());
             Stage cityStage = new Stage();
             cityStage.setTitle("City Chooser");
 
