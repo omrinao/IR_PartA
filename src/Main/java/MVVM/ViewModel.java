@@ -1,6 +1,7 @@
 package MVVM;
 
 import Indexing.TermData;
+import Searching.RetrievedDocument;
 
 import java.util.*;
 
@@ -55,5 +56,9 @@ public class ViewModel extends Observable implements Observer {
 
     public TreeSet<String> getCities(String outputDirectory, boolean stemming){
         return _model.getCities(outputDirectory, stemming);
+    }
+
+    public PriorityQueue<RetrievedDocument> processQuery(String query, List<String> cities, boolean stemming, String corpus){
+        return _model.processQuery(query, cities, stemming, corpus);
     }
 }

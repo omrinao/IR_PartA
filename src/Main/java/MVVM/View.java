@@ -8,9 +8,11 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxListCell;
@@ -18,6 +20,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -30,6 +33,7 @@ public class View implements Observer {
     private ViewModel vm;
 
     @FXML
+    //controllers for part A (indexing)
     public TextField corpus;
     public TextField dictpost;
     public CheckBox stemming;
@@ -38,15 +42,20 @@ public class View implements Observer {
     public ObservableList<String> _languagesList= FXCollections.observableArrayList();
     public ListView listView;
 
+    //Controllers and data structures needed for city selection
     ArrayList<String> citiesSelected = new ArrayList<>();
     ListView<CityFilter2> cityListView = new ListView<>();
     public Button selectAll;
     public Button deselectAll;
     public Button confirm;
 
+    //Controllers for part B (searching + results)
     public TextField tf_enterQuery;
     public TextField tf_loadQueryFile;
-    public ListView resultsListView = new ListView<>();
+    public ListView resultsListView = new ListView();
+    public BorderPane bp_results;
+    public TextArea textResults;
+    public ChoiceBox cb_queries;
 
 
     public void setVm(ViewModel vm) {
@@ -268,14 +277,14 @@ public class View implements Observer {
     public void queryChoose(ActionEvent actionEvent) {
 
         try {
-            DirectoryChooser directoryChooser = new DirectoryChooser();
-            File selectedDirectory =
-                    directoryChooser.showDialog(Main.pStage);
+            FileChooser fileChooser = new FileChooser();
+            File selectedFile =
+                    fileChooser.showOpenDialog(Main.pStage);
 
-            if(selectedDirectory == null){
+            if(selectedFile == null){
                 tf_loadQueryFile.setText("");
             }else{
-                tf_loadQueryFile.setText(selectedDirectory.getAbsolutePath());
+                tf_loadQueryFile.setText(selectedFile.getAbsolutePath());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -288,12 +297,12 @@ public class View implements Observer {
      */
     public void cityChoose(ActionEvent actionEvent){
         try {
-            HashMap<String, ArrayList<Integer>> cities = new HashMap<>();//need to get hash map of cities
+            TreeSet<String> cities = vm.getCities(dictpost.getText(), stemming.isSelected());
             Stage cityStage = new Stage();
             cityStage.setTitle("City Chooser");
 
-            for (int i=1; i<=10; i++) {
-                CityFilter2 item = new CityFilter2("Item "+i, false);
+            for (String city: cities) {
+                CityFilter2 item = new CityFilter2(city, false);
 
                 item.onProperty().addListener((obs, wasOn, isNowOn) -> {
                     if (isNowOn && !citiesSelected.contains(item.getName()))
@@ -334,8 +343,8 @@ public class View implements Observer {
             selectAll.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
                     citiesSelected.clear();
-                    for (int i=1; i<=10; i++) {
-                        CityFilter2 item = new CityFilter2("Item "+i, true);
+                    for (String city: cities) {
+                        CityFilter2 item = new CityFilter2(city, true);
                         citiesSelected.add(item.getName());
                         cityListView.setCellFactory(CheckBoxListCell.forListView(new Callback<CityFilter2, ObservableValue<Boolean>>() {
                             @Override
@@ -353,8 +362,8 @@ public class View implements Observer {
                 @Override public void handle(ActionEvent e) {
                     citiesSelected.clear();
 
-                    for (int i = 1; i <= 10; i++) {
-                        CityFilter2 item = new CityFilter2("Item " + i, false);
+                    for (String city: cities) {
+                        CityFilter2 item = new CityFilter2(city, false);
 
                     cityListView.setCellFactory(CheckBoxListCell.forListView(new Callback<CityFilter2, ObservableValue<Boolean>>() {
                         @Override
@@ -370,9 +379,7 @@ public class View implements Observer {
             //getting the selected cities from the user
             confirm.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                    for (String s: citiesSelected) {
-                        System.out.println(s);
-                    }
+                    cityStage.close();
                 }
             });
 
@@ -388,9 +395,15 @@ public class View implements Observer {
 
 
     public void runQuery (MouseEvent actionEvent){
-        actionEvent.consume();
-        ArrayList<RetrievedDocument> retrievedDocuments = new ArrayList<>();
+
+        PriorityQueue<RetrievedDocument> retrievedDocuments = new PriorityQueue<>();
         ArrayList<Hyperlink> hyperlinks = new ArrayList<>();
+
+        if (corpus.getText().isEmpty() || dictpost.getText().isEmpty()) {
+            popProblem("Enter corpus path and output directory!");
+            return;
+        }
+
         if (tf_enterQuery.getText().isEmpty() && tf_loadQueryFile.getText().isEmpty()) {
             popProblem("Enter query or load query file to run!");
             return;
@@ -401,48 +414,61 @@ public class View implements Observer {
         }
 
         else if (!tf_enterQuery.getText().isEmpty() && tf_loadQueryFile.getText().isEmpty()){
-            //citiesSelected
-            //retrievedDocuments = vm.getRetrievedDocuments(tf_enterQuery.getText());
+            retrievedDocuments = vm.processQuery(tf_enterQuery.getText(), citiesSelected, stemming.isSelected(), corpus.getText() + '\\');
         }
 
         else if (tf_enterQuery.getText().isEmpty() && !tf_loadQueryFile.getText().isEmpty()){
-            //citiesSelected
-            //retrievedDocuments = vm.getRetrievedDocuments(tf_enterQuery.getText());
+            //retrievedDocuments = vm.proccessQuery(tf_loadQueryFile.getText(), citiesSelected, stemming.isSelected());
         }
-        try {
+
+        final PriorityQueue<RetrievedDocument> finRetrievedDocuments = retrievedDocuments;//for handle method
+
+        try{
             Stage resultStage = new Stage();
             resultStage.setTitle("IR 2019");
+            FXMLLoader fxml = new FXMLLoader(getClass().getResource("/resultsView.fxml"));
+            Parent root = fxml.load();
+            View newController = fxml.getController();
+            bp_results = new BorderPane();
+            textResults = new TextArea();
+            cb_queries = new ChoiceBox();
+            cb_queries.setDisable(true);
+            for (RetrievedDocument retDoc: finRetrievedDocuments) {
+                hyperlinks.add(new Hyperlink(retDoc.get_docName()));
+            }
 
+            newController.resultsListView.getItems().addAll(hyperlinks);
 
-            hyperlinks.add(new Hyperlink("item 1"));
-            hyperlinks.add(new Hyperlink("item 2"));
-            hyperlinks.add(new Hyperlink("item 3"));
-            resultsListView.getItems().addAll(hyperlinks);
-
-            BorderPane root = new BorderPane();
-            root.setLeft(resultsListView);
-            VBox buttons = new VBox();
-
-            for (Hyperlink hl: hyperlinks) {
+            for (Hyperlink hl: hyperlinks){
                 hl.setOnAction(new EventHandler<ActionEvent>() {
-
                     @Override
                     public void handle(ActionEvent t) {
                         String docName = hl.getText();
-                        //open new stage and show the document
-                        //root.setRight();
+                        for (RetrievedDocument rd : finRetrievedDocuments) {
+                            if (rd.get_docName().equals(docName)) {
+                                newController.textResults.setText("HELLO");
+                                break;
+                            }
+                        }
                     }
                 });
             }
 
-
-            Scene scene = new Scene(root, 900, 450);
+            Scene scene = new Scene(root, 800, 450);
             scene.getStylesheets().add(getClass().getResource("/ViewStyle.css").toExternalForm());
             resultStage.setScene(scene);
             resultStage.show();
         }
-        catch (Exception e){}
 
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+    }
+
+    private void runQueryFile(){
+        
     }
 }
 

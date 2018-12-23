@@ -56,13 +56,13 @@ public class Model extends Observable {
         boolean stem = Boolean.valueOf(stemming);
 
         // --------- initing blocking queues ----------
-        BlockingQueue<Document> beforeParse = new ArrayBlockingQueue<>(1000);
-        BlockingQueue<Document> afterParse = new ArrayBlockingQueue<>(1000);
+        BlockingQueue<Document> beforeParse = new ArrayBlockingQueue<>(2000);
+        BlockingQueue<Document> afterParse = new ArrayBlockingQueue<>(2000);
 
         // --------- initing working classes ----------
         ReadFile2 reader = new ReadFile2(_corpusPath);
         Parser parser = new Parser();
-        Indexer indexer = new Indexer(4000, _writeTo);
+        Indexer indexer = new Indexer(7000, _writeTo);
 
         // --------- setting Read File ----------
         reader.setQueue(beforeParse);
@@ -272,10 +272,10 @@ public class Model extends Observable {
      * @param stemming - weather stemming is requested or not
      * @return - priority queue of relevant documents
      */
-    public PriorityQueue<RetrievedDocument> proccessQuery(String query, List<String> cities, boolean stemming){
+    public PriorityQueue<RetrievedDocument> processQuery(String query, List<String> cities, boolean stemming, String corpus){
 
         IRanker r = new RankerNoSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo);
-        Searcher s = new Searcher(r, ReadFile2.getStopWords(_corpusPath), stemming);
+        Searcher s = new Searcher(r, ReadFile2.getStopWords(corpus), stemming);
 
         System.out.println("Starting to search and rank");
         PriorityQueue<RetrievedDocument> top50 = s.getRelevantDocuments(query, cities);
@@ -332,6 +332,7 @@ public class Model extends Observable {
         m._corpusPath = "C:\\Users\\חגי קלינהוף\\Desktop\\שנה ג'\\סמסטר ה'\\אחזור מידע\\פרויקט מנוע\\Part 1 tests\\corpus\\";
         String[] details = {"false", m._corpusPath, m._writeTo};
         m.loadDict(details);
+
 
 
         String query = "blood-alcohol fatalities";
