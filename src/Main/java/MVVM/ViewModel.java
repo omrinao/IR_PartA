@@ -2,10 +2,7 @@ package MVVM;
 
 import Indexing.TermData;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.*;
 
 public class ViewModel extends Observable implements Observer {
 
@@ -54,5 +51,9 @@ public class ViewModel extends Observable implements Observer {
 
     public HashMap<String, TermData> getTermDict(String stem, String path) {
         return _model.getTermDict(stem, path);
+    }
+
+    public TreeSet<String> getCities(String outputDirectory, boolean stemming){
+        return _model.getCities(outputDirectory, stemming);
     }
 }

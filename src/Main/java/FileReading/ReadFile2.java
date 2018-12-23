@@ -79,7 +79,7 @@ public class ReadFile2 implements Runnable {
 
                 }
             });
-            System.out.println("ReadFile2: Finished reading, send to parser");
+            System.out.println("ReadFile2: Finished reading, send to parser     num of doc: "+_docNum);
             Document last = new Document("done");
             last.setFinal(true);
             _documentsQueue.put(last);

@@ -120,7 +120,7 @@ public class IndexMerger {
                 properFillQueue();
 
                 String onlyATest = origTerm + "#~" + toAddTerm;
-                _postingPointer += onlyATest.getBytes().length;//(origTerm.length()+1);
+                _postingPointer += onlyATest.getBytes("UTF-8").length;//(origTerm.length()+1);
                 _postingWriter.append(onlyATest);
                 //System.out.println("wrote term: " + onlyATest);
 
