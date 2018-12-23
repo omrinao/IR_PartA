@@ -4,15 +4,13 @@ import Indexing.IndexMerger;
 import Indexing.Indexer;
 import Indexing.TermData;
 import Parse.Parser;
+import Searching.Query;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -34,6 +32,7 @@ public class ReadFile2 implements Runnable {
         numOfFilesRead = 0;
         _docNum = 0;
     }
+
 
     public void setQueue(BlockingQueue<Document> queue){
         this._documentsQueue = queue;
@@ -270,4 +269,62 @@ public class ReadFile2 implements Runnable {
 
         return toReturn;
     }
+
+
+    /**
+     * method to extract queries from a query file
+     * @param queryFile - the path to the file
+     * @return - list of containing queries
+     * @throws IOException - if exception has occured
+     */
+    public static List<Query> getQueries(String queryFile) throws IOException{
+
+        List<Query> toReturn = new ArrayList<>();
+        List<String> file = Files.readAllLines(Paths.get(queryFile));
+        StringBuilder queryData = new StringBuilder();
+
+        for (String line :
+                file){
+            if (line.contains("</top>")){
+                toReturn.add(buildQuery(queryData.toString()));
+                queryData = new StringBuilder();
+            }
+            else{
+                queryData.append(line);
+            }
+        }
+        return toReturn;
+    }
+
+    /**
+     * method to build a query
+     * @param queryData - the entire query
+     * @return - query object parsed by the entire string
+     */
+    private static Query buildQuery(String queryData) {
+        Query toReturn = new Query();
+        String phrase = "";
+
+        int start = queryData.indexOf("Number:");
+        int end = queryData.indexOf("<title>");
+        phrase = queryData.substring(start+7, end).trim();
+        toReturn.set_number(phrase);
+
+        start = end;
+        end = queryData.indexOf("<desc>");
+        phrase = queryData.substring(start+7, end).trim();
+        toReturn.set_title(phrase);
+
+        start = queryData.indexOf("Description:");
+        end = queryData.indexOf("<narr>");
+        phrase = queryData.substring(start+12, end).trim();
+        toReturn.set_description(phrase);
+
+        start = queryData.indexOf("Narrative:");
+        phrase = queryData.substring(start+10).trim();
+        toReturn.set_narrative(phrase);
+
+        return toReturn;
+    }
+
 }

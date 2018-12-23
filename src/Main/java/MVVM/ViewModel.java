@@ -1,6 +1,7 @@
 package MVVM;
 
 import Indexing.TermData;
+import Searching.Query;
 import Searching.RetrievedDocument;
 
 import java.util.*;
@@ -59,6 +60,11 @@ public class ViewModel extends Observable implements Observer {
     }
 
     public PriorityQueue<RetrievedDocument> processQuery(String query, List<String> cities, boolean stemming, String corpus){
-        return _model.processQuery(query, cities, stemming, corpus);
+        return _model.processQuery(query, cities, stemming, corpus, false);
+    }
+
+    public HashMap<Query, PriorityQueue<RetrievedDocument>> processQueryByFile
+            (String queryFile, List<String> cities, boolean stemming, String corpusPath){
+        return _model.processQueryFile(queryFile, cities, stemming, corpusPath);
     }
 }
