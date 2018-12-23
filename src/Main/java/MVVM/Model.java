@@ -58,13 +58,13 @@ public class Model extends Observable {
         boolean stem = Boolean.valueOf(stemming);
 
         // --------- initing blocking queues ----------
-        BlockingQueue<Document> beforeParse = new ArrayBlockingQueue<>(1000);
-        BlockingQueue<Document> afterParse = new ArrayBlockingQueue<>(1000);
+        BlockingQueue<Document> beforeParse = new ArrayBlockingQueue<>(2000);
+        BlockingQueue<Document> afterParse = new ArrayBlockingQueue<>(2000);
 
         // --------- initing working classes ----------
         ReadFile2 reader = new ReadFile2(_corpusPath);
         Parser parser = new Parser();
-        Indexer indexer = new Indexer(4000, _writeTo);
+        Indexer indexer = new Indexer(7000, _writeTo);
 
         // --------- setting Read File ----------
         reader.setQueue(beforeParse);
@@ -209,7 +209,7 @@ public class Model extends Observable {
                 _loadedDict = (HashMap<String, TermData>) inputStream.readObject();
                 inputStream.close();
 
-                inputStream = new ObjectInputStream(new FileInputStream(loadFrom + "DocDictionary"));
+                inputStream = new ObjectInputStream(new FileInputStream(loadFrom + "DocsDictionary"));
                 _loadedDocDict = (DocumentDictionary) inputStream.readObject();
                 inputStream.close();
 
@@ -274,10 +274,10 @@ public class Model extends Observable {
      * @param stemming - weather stemming is requested or not
      * @return - priority queue of relevant documents
      */
-    public PriorityQueue<RetrievedDocument> proccessQuery(String query, List<String> cities, boolean stemming){
+    public PriorityQueue<RetrievedDocument> processQuery(String query, List<String> cities, boolean stemming, String corpus){
 
         IRanker r = new RankerNoSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo);
-        Searcher s = new Searcher(r, ReadFile2.getStopWords(_corpusPath), stemming);
+        Searcher s = new Searcher(r, ReadFile2.getStopWords(corpus), stemming);
 
         PriorityQueue<RetrievedDocument> top50 = s.getRelevantDocuments(query, cities);
 
@@ -336,7 +336,7 @@ public class Model extends Observable {
 
 
         String query = "polytechnic Churchill trailblazer";
-        PriorityQueue<RetrievedDocument> retrievedDocuments = m.proccessQuery(query, null, false);
+        PriorityQueue<RetrievedDocument> retrievedDocuments = m.processQuery(query, null, false, m._corpusPath);
         while (!retrievedDocuments.isEmpty()){
             System.out.println(retrievedDocuments.poll());
         }
