@@ -2,6 +2,7 @@ package MVVM;
 
 import FileReading.Document;
 import FileReading.ReadFile2;
+import Indexing.CityDetails;
 import Indexing.DocumentDictionary;
 import Indexing.Indexer;
 import Indexing.TermData;
@@ -185,6 +186,10 @@ public class Model extends Observable {
                 _loadedDict = (HashMap<String, TermData>) inputStream.readObject();
                 inputStream.close();
 
+                inputStream = new ObjectInputStream(new FileInputStream(loadFrom + "STEMDocDictionary"));
+                _loadedDocDict = (DocumentDictionary) inputStream.readObject();
+                inputStream.close();
+
                 setChanged();
                 notifyObservers("Dictionary with stemming loaded!");
 
@@ -202,6 +207,10 @@ public class Model extends Observable {
             try {
                 ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(loadFrom + "TermsDictionary"));
                 _loadedDict = (HashMap<String, TermData>) inputStream.readObject();
+                inputStream.close();
+
+                inputStream = new ObjectInputStream(new FileInputStream(loadFrom + "DocDictionary"));
+                _loadedDocDict = (DocumentDictionary) inputStream.readObject();
                 inputStream.close();
 
                 setChanged();
@@ -258,6 +267,13 @@ public class Model extends Observable {
         return _loadedDict;
     }
 
+    /**
+     * method to process a single given query
+     * @param query - the query
+     * @param cities - list of cities restrictions for the query
+     * @param stemming - weather stemming is requested or not
+     * @return - priority queue of relevant documents
+     */
     public PriorityQueue<RetrievedDocument> proccessQuery(String query, List<String> cities, boolean stemming){
 
         IRanker r = new RankerNoSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo);
@@ -268,6 +284,47 @@ public class Model extends Observable {
         return top50;
     }
 
+    /**
+     * method to retrieve the cities
+     * @param outputDirectory - output directory given
+     * @param stemming - weather stemming is required
+     * @return ordered set of cities if success, null otherwise
+     */
+    public TreeSet<String> getCities(String outputDirectory, boolean stemming){
+        if (_writeTo != null && !_writeTo.isEmpty()){
+            outputDirectory = _writeTo;
+        }
+        else if (outputDirectory != null && !outputDirectory.isEmpty()){
+            _writeTo = outputDirectory + "\\";
+        }
+        else {
+            setChanged();
+            notifyObservers("Error!\n" + "Please specify a directory of a proper dictionary" );
+        }
+
+        String stem = "";
+        if (stemming){
+            stem = "STEM";
+        }
+
+        try(
+                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(stem + "CityDictionary"))
+                ){
+            HashMap <String, CityDetails> cities = (HashMap <String, CityDetails>) inputStream.readObject();
+            return new TreeSet<String>(cities.keySet());
+        }
+        catch (IOException e ){
+            setChanged();
+            notifyObservers("Error at openening file: " + e.getMessage());
+
+        }catch (ClassNotFoundException f){
+            setChanged();
+            notifyObservers("Error at loading dicitionary: " + f.getMessage());
+        }
+
+        return null;
+    }
+
 
     public static void main(String[] args){
         Model m = new Model();
@@ -275,7 +332,7 @@ public class Model extends Observable {
         m._writeTo = "C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\Doc Test";
         m._corpusPath = "C:\\Users\\חגי קלינהוף\\Desktop\\שנה ג'\\סמסטר ה'\\אחזור מידע\\פרויקט מנוע\\Part 1 tests\\corpus";
         String[] details = {"false", m._corpusPath, m._writeTo};
-        m.execute(details);
+        m.loadDict(details);
 
 
         String query = "polytechnic Churchill trailblazer";

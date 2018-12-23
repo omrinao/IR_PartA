@@ -53,7 +53,7 @@ public class Parser implements Runnable{
                 d.setLanguage(removePeriod2(d.getLanguage()));
                 String allText = d.getText();
                 if (allText == null || allText.isEmpty()){
-                    System.out.println("Skipped doc: " + d.getDocNum());
+                    // System.out.println("Skipped doc: " + d.getDocNum());
                     continue;
                 }
 
