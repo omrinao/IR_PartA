@@ -50,6 +50,10 @@ public class Query {
         this._narrative = _narrative;
     }
 
+    public Integer get_donNumber(){
+        return Integer.valueOf(_number);
+    }
+
     @Override
     public String toString() {
         return "Query{" +

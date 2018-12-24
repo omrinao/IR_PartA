@@ -493,9 +493,14 @@ public class View implements Observer {
 
 
     private void runQueryFile(String path){
-        HashMap <Query, PriorityQueue<RetrievedDocument>> queries = vm.processQueryByFile
+
+        Map <Query, PriorityQueue<RetrievedDocument>> queries = vm.processQueryByFile
                 (path, citiesSelected, stemming.isSelected(), corpus.getText() + '\\');
         ArrayList<Hyperlink> hyperlinks = new ArrayList<>();
+        HashMap<String, PriorityQueue<RetrievedDocument>> stringQueries = new HashMap<>();
+        for (Query q: queries.keySet()) {
+            stringQueries.put(q.get_title(), queries.get(q));
+        }
 
         try{
             Stage resultStage = new Stage();
@@ -516,7 +521,11 @@ public class View implements Observer {
                 @Override
                 public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
 
-                    PriorityQueue<RetrievedDocument> results = queries.get(newController.cb_queries.getSelectionModel().getSelectedItem());
+                    newController.resultsListView.getItems().clear();
+                    newController.textResults.clear();
+                    hyperlinks.clear();
+                    PriorityQueue<RetrievedDocument> results = stringQueries.get(newController.cb_queries.getSelectionModel().getSelectedItem());
+                  
                     if (results != null) {
                         for (RetrievedDocument rd : results) {
                             hyperlinks.add(new Hyperlink(rd.get_docName()));

@@ -359,10 +359,15 @@ public class Model extends Observable {
      * @param corpusPath - the path to the corpus for stop words porpuses
      * @return - map of query and its results
      */
-    public HashMap<Query, PriorityQueue<RetrievedDocument>> processQueryFile
+    public Map<Query, PriorityQueue<RetrievedDocument>> processQueryFile
             (String queryFile, List<String> cities, boolean stemming, String corpusPath){
 
-        HashMap<Query, PriorityQueue<RetrievedDocument>> toReturn = new HashMap<>();
+        TreeMap<Query, PriorityQueue<RetrievedDocument>> toReturn = new TreeMap<>(new Comparator<Query>() {
+            @Override
+            public int compare(Query o1, Query o2) {
+                return Integer.compare(o1.get_donNumber(), o2.get_donNumber());
+            }
+        });
         try {
             List<Query> queries = ReadFile2.getQueries(queryFile);
             for (Query q :
@@ -386,15 +391,16 @@ public class Model extends Observable {
     public static void main(String[] args){
         Model m = new Model();
 
+      
         m._writeTo = "C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\Doc Test\\";
         m._corpusPath = "C:\\Users\\חגי קלינהוף\\Desktop\\שנה ג'\\סמסטר ה'\\אחזור מידע\\פרויקט מנוע\\Part 1 tests\\corpus\\";
         String[] details = {"false", m._corpusPath, m._writeTo};
         m.loadDict(details);
 /*
 
-
         String query = "Falkland petroleum exploration";
         PriorityQueue<RetrievedDocument> retrievedDocuments = m.processQuery(query, new ArrayList<>(), false, m._corpusPath, false);
+
         TreeSet<RetrievedDocument> sorted = new TreeSet<>(new Comparator<RetrievedDocument>() {
             @Override
             public int compare(RetrievedDocument o1, RetrievedDocument o2) {
@@ -407,8 +413,8 @@ public class Model extends Observable {
             System.out.println(d);
 */
         try (
-                BufferedWriter bw = new BufferedWriter(new PrintWriter("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\Doc Test\\doctest.txt"));
-                RandomAccessFile ra = new RandomAccessFile("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\Doc Test\\DocumentPosting.txt", "r");
+                BufferedWriter bw = new BufferedWriter(new PrintWriter("C:\\Users\\omri\\Desktop\\IR_PartA\\doctest.txt"));
+                RandomAccessFile ra = new RandomAccessFile("C:\\Users\\omri\\Desktop\\IR_PartA\\DocumentPosting.txt", "r");
                 ){
 
             for (Integer id :
