@@ -295,7 +295,14 @@ public class Model extends Observable {
      * @return ordered set of cities if success, null otherwise
      */
     public TreeSet<String> getCities(String outputDirectory, boolean stemming){
-        if (_writeTo != null && !_writeTo.isEmpty()){
+
+        if (_writeTo == null || _writeTo.isEmpty()) {
+            notifyObservers("Error!\n" + "Please specify corpus path and output directory");
+            return null;
+        }
+
+
+        else if (_writeTo != null && !_writeTo.isEmpty()){
             outputDirectory = _writeTo;
         }
         else if (outputDirectory != null && !outputDirectory.isEmpty()){
@@ -319,11 +326,11 @@ public class Model extends Observable {
         }
         catch (IOException e ){
             setChanged();
-            notifyObservers("Error at openening file: " + e.getMessage());
+            notifyObservers("Error at opening file: " + e.getMessage());
 
         }catch (ClassNotFoundException f){
             setChanged();
-            notifyObservers("Error at loading dicitionary: " + f.getMessage());
+            notifyObservers("Error at loading dictionary: " + f.getMessage());
         }
 
         return null;
