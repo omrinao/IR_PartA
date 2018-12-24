@@ -7,10 +7,7 @@ import Indexing.DocumentDictionary;
 import Indexing.Indexer;
 import Indexing.TermData;
 import Parse.Parser;
-import Searching.IRanker;
-import Searching.RankerNoSemantics;
-import Searching.RetrievedDocument;
-import Searching.Searcher;
+import Searching.*;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -273,13 +270,20 @@ public class Model extends Observable {
      * @param stemming - weather stemming is requested or not
      * @return - priority queue of relevant documents
      */
-    public PriorityQueue<RetrievedDocument> processQuery(String query, List<String> cities, boolean stemming, String corpus){
+    public PriorityQueue<RetrievedDocument> processQuery
+    (String query, List<String> cities, boolean stemming, String corpus, boolean fileQuery){
 
         IRanker r = new RankerNoSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo);
         Searcher s = new Searcher(r, ReadFile2.getStopWords(corpus), stemming);
 
         System.out.println("Starting to search and rank");
         PriorityQueue<RetrievedDocument> top50 = s.getRelevantDocuments(query, cities);
+
+        if (!fileQuery){
+            int random = (int) (Math.random()*100);
+            writeQueryResults(top50,  "" + random, false);
+        }
+
 
         return top50;
     }
@@ -325,6 +329,67 @@ public class Model extends Observable {
         return null;
     }
 
+    /**
+     * method to write free query to disk
+     * @param top50 - the top 50 retrieved documents
+     * @param queryNum - the query number, in this case is random
+     */
+    private void writeQueryResults(PriorityQueue<RetrievedDocument> top50, String queryNum, boolean append){
+        String path = _writeTo;
+        if (append){
+            path = path+"fileQueryResults.txt";
+        }
+        else {
+            path = path+"freeQuery" + queryNum + "Result.txt";
+        }
+        try(
+                PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(path, append)))
+            ){
+
+            for (RetrievedDocument d :
+                    top50){
+                String toBeWritten = String.format("%s %s %s %s %s %s", queryNum, "0", d.get_docName(), "1", d.get_rank(), "dude");
+                pw.println(toBeWritten);
+            }
+        }
+        catch (IOException e){
+            System.out.println("Failed writing results to file");
+        }
+
+    }
+
+    /**
+     * method to process queries from a file
+     * this method also write results to a file
+     * @param queryFile - the path to the file
+     * @param cities - list of cities constrains
+     * @param stemming - weather stemming is required or not
+     * @param corpusPath - the path to the corpus for stop words porpuses
+     * @return - map of query and its results
+     */
+    public HashMap<Query, PriorityQueue<RetrievedDocument>> processQueryFile
+            (String queryFile, List<String> cities, boolean stemming, String corpusPath){
+
+        HashMap<Query, PriorityQueue<RetrievedDocument>> toReturn = new HashMap<>();
+        try {
+            List<Query> queries = ReadFile2.getQueries(queryFile);
+            for (Query q :
+                    queries){
+                PriorityQueue<RetrievedDocument> top50 = processQuery(q.get_title(), cities, stemming, corpusPath, true);
+                toReturn.put(q, top50);
+                writeQueryResults(top50, q.get_number(), true);
+            }
+        }
+        catch (IOException e){
+            System.out.println("Failed parsing queries");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+
+        return toReturn;
+    }
+
 
     public static void main(String[] args){
         Model m = new Model();
@@ -335,9 +400,9 @@ public class Model extends Observable {
         m.loadDict(details);
 
 
+        String query = "Falkland petroleum exploration";
+        PriorityQueue<RetrievedDocument> retrievedDocuments = m.processQuery(query, new ArrayList<>(), false, m._corpusPath, false);
 
-        String query = "blood-alcohol fatalities";
-        PriorityQueue<RetrievedDocument> retrievedDocuments = m.processQuery(query, new ArrayList<>(), false, m._corpusPath);
         TreeSet<RetrievedDocument> sorted = new TreeSet<>(new Comparator<RetrievedDocument>() {
             @Override
             public int compare(RetrievedDocument o1, RetrievedDocument o2) {
@@ -346,7 +411,7 @@ public class Model extends Observable {
         });
         sorted.addAll(retrievedDocuments);
         for (RetrievedDocument d:
-                sorted)
+                retrievedDocuments)
             System.out.println(d);
 /*
         try (
