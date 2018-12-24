@@ -4,8 +4,8 @@ import java.util.ArrayList;
 
 public class RetrievedDocument implements Comparable{
 
-    short _startLine;
-    short _endLine;
+    int _startLine;
+    int _endLine;
     String _docNum;
     String _docName;
     String _city;
@@ -48,19 +48,19 @@ public class RetrievedDocument implements Comparable{
         this._text = _text;
     }
 
-    public short get_startLine() {
+    public int get_startLine() {
         return _startLine;
     }
 
-    public void set_startLine(short _startLine) {
+    public void set_startLine(int _startLine) {
         this._startLine = _startLine;
     }
 
-    public short get_endLine() {
+    public int get_endLine() {
         return _endLine;
     }
 
-    public void set_endLine(short _endLine) {
+    public void set_endLine(int _endLine) {
         this._endLine = _endLine;
     }
 

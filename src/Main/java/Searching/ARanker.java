@@ -4,6 +4,7 @@ import Indexing.DocumentDictionary;
 import Indexing.PostingTermData;
 import Indexing.TermData;
 import Parse.IntWrapper;
+import javafx.fxml.Initializable;
 
 import java.io.*;
 import java.util.*;
@@ -138,8 +139,8 @@ public abstract class ARanker implements IRanker  {
                 String data = ra.readLine();
 
                 String[] docData = data.split(" ");
-                short startLine = Short.valueOf(docData[0]);
-                short endLine = Short.valueOf(docData[1]);
+                int startLine = Integer.valueOf(docData[0]);
+                int endLine = Integer.valueOf(docData[1]);
                 String relative = docData[2];
                 int unique = Integer.valueOf(docData[3]);
                 int maxTF = Integer.valueOf(docData[4]);

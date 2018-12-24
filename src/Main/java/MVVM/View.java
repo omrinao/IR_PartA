@@ -457,8 +457,8 @@ public class View implements Observer {
                         String docName = hl.getText();
                         for (RetrievedDocument rd : finRetrievedDocuments) {
                             if (rd.get_docName().equals(docName)) {
-                                newController.textResults.setText(ReadFile2.getTextFromDoc(corpus.getText() + '\\' + rd.get_file(),
-                                        rd.get_docName(), rd.get_startLine(), rd.get_endLine()));
+                                newController.textResults.setText(ReadFile2.getTextFromDoc
+                                        (corpus.getText() + '\\' + rd.get_file(), rd.get_startLine(), rd.get_endLine()));
                                 break;
                             }
                         }
@@ -518,8 +518,8 @@ public class View implements Observer {
                                     String docName = hl.getText();
                                     for (RetrievedDocument rd : results) {
                                         if (rd.get_docName().equals(docName)) {
-                                            newController.textResults.setText(ReadFile2.getTextFromDoc(corpus.getText() + '\\' + rd.get_file(),
-                                                    rd.get_docName(), rd.get_startLine(), rd.get_endLine()));
+                                            newController.textResults.setText(ReadFile2.getTextFromDoc
+                                                    (corpus.getText() + '\\' + rd.get_file(), rd.get_startLine(), rd.get_endLine()));
                                             break;
                                         }
                                     }
