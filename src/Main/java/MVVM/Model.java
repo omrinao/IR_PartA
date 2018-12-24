@@ -295,7 +295,14 @@ public class Model extends Observable {
      * @return ordered set of cities if success, null otherwise
      */
     public TreeSet<String> getCities(String outputDirectory, boolean stemming){
-        if (_writeTo != null && !_writeTo.isEmpty()){
+
+        if (_writeTo == null || _writeTo.isEmpty()) {
+            notifyObservers("Error!\n" + "Please specify corpus path and output directory");
+            return null;
+        }
+
+
+        else if (_writeTo != null && !_writeTo.isEmpty()){
             outputDirectory = _writeTo;
         }
         else if (outputDirectory != null && !outputDirectory.isEmpty()){
@@ -319,11 +326,11 @@ public class Model extends Observable {
         }
         catch (IOException e ){
             setChanged();
-            notifyObservers("Error at openening file: " + e.getMessage());
+            notifyObservers("Error at opening file: " + e.getMessage());
 
         }catch (ClassNotFoundException f){
             setChanged();
-            notifyObservers("Error at loading dicitionary: " + f.getMessage());
+            notifyObservers("Error at loading dictionary: " + f.getMessage());
         }
 
         return null;
@@ -394,15 +401,16 @@ public class Model extends Observable {
     public static void main(String[] args){
         Model m = new Model();
 
+      
         m._writeTo = "C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\Doc Test\\";
         m._corpusPath = "C:\\Users\\חגי קלינהוף\\Desktop\\שנה ג'\\סמסטר ה'\\אחזור מידע\\פרויקט מנוע\\Part 1 tests\\corpus\\";
         String[] details = {"false", m._corpusPath, m._writeTo};
         m.loadDict(details);
 /*
 
-
         String query = "Falkland petroleum exploration";
         PriorityQueue<RetrievedDocument> retrievedDocuments = m.processQuery(query, new ArrayList<>(), false, m._corpusPath, false);
+
         TreeSet<RetrievedDocument> sorted = new TreeSet<>(new Comparator<RetrievedDocument>() {
             @Override
             public int compare(RetrievedDocument o1, RetrievedDocument o2) {
@@ -415,8 +423,8 @@ public class Model extends Observable {
             System.out.println(d);
 */
         try (
-                BufferedWriter bw = new BufferedWriter(new PrintWriter("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\Doc Test\\doctest.txt"));
-                RandomAccessFile ra = new RandomAccessFile("C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\Doc Test\\DocumentPosting.txt", "r");
+                BufferedWriter bw = new BufferedWriter(new PrintWriter("C:\\Users\\omri\\Desktop\\IR_PartA\\doctest.txt"));
+                RandomAccessFile ra = new RandomAccessFile("C:\\Users\\omri\\Desktop\\IR_PartA\\DocumentPosting.txt", "r");
                 ){
 
             for (Integer id :
