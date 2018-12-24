@@ -327,17 +327,39 @@ public class ReadFile2 implements Runnable {
         return toReturn;
     }
 
-    public static String getTextFromDoc (String path, String docName, short startLine, short endLine){
+    /**
+     * method to extract text from file, used to show query result text.
+     * @param path - corpus + directory path
+     * @param startLine - start of the document
+     * @param endLine - end of the document
+     * @return
+     */
+    public static String getTextFromDoc (String path, int startLine, int endLine){
 
         String valueToReturn = "";
 
         try {
-            FileReader reader = new FileReader(new File(path));
-            short counter = 0;
-            while (counter < startLine)
-                reader.read();
-            while (counter < endLine)
-                valueToReturn += reader.read();
+            int idx = path.lastIndexOf('\\');
+            String fileName = path.substring(idx);
+            String currentLine = "";
+            BufferedReader br = new BufferedReader(new FileReader(path + fileName));
+            int counter = 0;
+            while (counter < startLine) {
+                br.readLine();
+                counter++;
+            }
+            while (!currentLine.contains("<TEXT>")) {
+                currentLine = br.readLine();
+                counter++;
+            }
+            while (counter < endLine && !currentLine.contains("</TEXT>")){
+                currentLine = br.readLine();
+                if (currentLine.contains("</TEXT>"))
+                    valueToReturn += currentLine.substring(0, currentLine.length() - 7);
+                else
+                    valueToReturn += (currentLine + "\n");
+                counter++;
+            }
         }
         catch (Exception e){
             e.printStackTrace();
