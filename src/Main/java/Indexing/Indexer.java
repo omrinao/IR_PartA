@@ -384,7 +384,6 @@ public class Indexer implements Runnable {
 
     /**
      * method to write to doc posting
-     * @throws IOException - if error occurred during writing
      */
     private void writeToDocPosting(){
         String path = null;

@@ -225,15 +225,6 @@ public class Model extends Observable {
 
     }
 
-    /**
-     * method to show the content of the dictionary
-     * @param stemming - weather dictionary with stemming is requested or not
-     */
-    public void showDict(String stemming) {
-        //displaying dictionary
-        System.out.println("check showdict");
-    }
-
 
     /**
      * @return - languages found
@@ -296,13 +287,7 @@ public class Model extends Observable {
      */
     public TreeSet<String> getCities(String outputDirectory, boolean stemming){
 
-        if (_writeTo == null || _writeTo.isEmpty()) {
-            notifyObservers("Error!\n" + "Please specify corpus path and output directory");
-            return null;
-        }
-
-
-        else if (_writeTo != null && !_writeTo.isEmpty()){
+        if (_writeTo != null && !_writeTo.isEmpty()){
             outputDirectory = _writeTo;
         }
         else if (outputDirectory != null && !outputDirectory.isEmpty()){
@@ -319,7 +304,7 @@ public class Model extends Observable {
         }
 
         try(
-                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(stem + "CityDictionary"))
+                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(_writeTo + stem + "CityDictionary"))
                 ){
             HashMap <String, CityDetails> cities = (HashMap <String, CityDetails>) inputStream.readObject();
             return new TreeSet<String>(cities.keySet());

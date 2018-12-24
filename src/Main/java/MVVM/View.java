@@ -516,7 +516,7 @@ public class View implements Observer {
                 @Override
                 public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
 
-                    PriorityQueue<RetrievedDocument> results = queries.get(cb_queries.getSelectionModel().getSelectedItem());
+                    PriorityQueue<RetrievedDocument> results = queries.get(newController.cb_queries.getSelectionModel().getSelectedItem());
                     if (results != null) {
                         for (RetrievedDocument rd : results) {
                             hyperlinks.add(new Hyperlink(rd.get_docName()));
