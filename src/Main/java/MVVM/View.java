@@ -1,7 +1,10 @@
 package MVVM;
 
+import FileReading.ReadFile2;
 import Indexing.TermData;
+import Searching.Query;
 import Searching.RetrievedDocument;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -55,7 +58,7 @@ public class View implements Observer {
     public ListView resultsListView = new ListView();
     public BorderPane bp_results;
     public TextArea textResults;
-    public ChoiceBox cb_queries;
+    public ComboBox cb_queries;
 
 
     public void setVm(ViewModel vm) {
@@ -297,100 +300,107 @@ public class View implements Observer {
      */
     public void cityChoose(ActionEvent actionEvent){
         try {
-            TreeSet<String> cities = vm.getCities(dictpost.getText(), stemming.isSelected());
-            Stage cityStage = new Stage();
-            cityStage.setTitle("City Chooser");
+            if (vm.getCities(dictpost.getText(), stemming.isSelected()) != null) {
+                TreeSet<String> cities = vm.getCities(dictpost.getText(), stemming.isSelected());
+                Stage cityStage = new Stage();
+                cityStage.setTitle("City Chooser");
 
-            for (String city: cities) {
-                CityFilter2 item = new CityFilter2(city, false);
+                for (String city : cities) {
+                    CityFilter2 item = new CityFilter2(city, false);
 
-                item.onProperty().addListener((obs, wasOn, isNowOn) -> {
-                    if (isNowOn && !citiesSelected.contains(item.getName()))
-                        citiesSelected.add(item.getName());
-                    else if (!isNowOn && citiesSelected.contains(item.getName()))
-                        citiesSelected.remove(item.getName());
+                    item.onProperty().addListener((obs, wasOn, isNowOn) -> {
+                        if (isNowOn && !citiesSelected.contains(item.getName()))
+                            citiesSelected.add(item.getName());
+                        else if (!isNowOn && citiesSelected.contains(item.getName()))
+                            citiesSelected.remove(item.getName());
+                    });
+
+                    cityListView.getItems().add(item);
+                }
+
+                //set checkbox cell
+                cityListView.setCellFactory(CheckBoxListCell.forListView(new Callback<CityFilter2, ObservableValue<Boolean>>() {
+                    @Override
+                    public ObservableValue<Boolean> call(CityFilter2 item) {
+                        if (citiesSelected.contains(item.getName()))
+                            item.setOn(true);
+                        else
+                            item.setOn(false);
+                        return item.onProperty();
+                    }
+                }));
+
+                //set the controllers
+                selectAll = new Button("Select All");
+                deselectAll = new Button("Deselect All");
+                confirm = new Button("Confirm");
+                deselectAll.setMaxWidth(200);
+                BorderPane root = new BorderPane();
+                root.setLeft(cityListView);
+                VBox buttons = new VBox();
+                buttons.setPadding(new Insets(20, 20, 20, 20));
+                buttons.getChildren().addAll(selectAll, deselectAll, confirm);
+                buttons.setSpacing(20);
+                root.setCenter(buttons);
+
+                //select all cities
+                selectAll.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent e) {
+                        citiesSelected.clear();
+                        for (String city : cities) {
+                            CityFilter2 item = new CityFilter2(city, true);
+                            citiesSelected.add(item.getName());
+                            cityListView.setCellFactory(CheckBoxListCell.forListView(new Callback<CityFilter2, ObservableValue<Boolean>>() {
+                                @Override
+                                public ObservableValue<Boolean> call(CityFilter2 item) {
+                                    item.onProperty().set(true);
+                                    return item.onProperty();
+                                }
+                            }));
+                        }
+                    }
                 });
 
-                cityListView.getItems().add(item);
-            }
+                //deselect all cities
+                deselectAll.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent e) {
+                        citiesSelected.clear();
 
-            //set checkbox cell
-            cityListView.setCellFactory(CheckBoxListCell.forListView(new Callback<CityFilter2, ObservableValue<Boolean>>() {
-                @Override
-                public ObservableValue<Boolean> call(CityFilter2 item) {
-                    if (citiesSelected.contains(item.getName()))
-                        item.setOn(true);
-                    else
-                        item.setOn(false);
-                    return item.onProperty();
-                }
-            }));
+                        for (String city : cities) {
+                            CityFilter2 item = new CityFilter2(city, false);
 
-            //set the controllers
-            selectAll = new Button("Select All");
-            deselectAll = new Button("Deselect All");
-            confirm = new Button("Confirm");
-            deselectAll.setMaxWidth(200);
-            BorderPane root = new BorderPane();
-            root.setLeft(cityListView);
-            VBox buttons = new VBox();
-            buttons.setPadding(new Insets(20,20,20,20));
-            buttons.getChildren().addAll(selectAll, deselectAll, confirm);
-            buttons.setSpacing(20);
-            root.setCenter(buttons);
-
-            //select all cities
-            selectAll.setOnAction(new EventHandler<ActionEvent>() {
-                @Override public void handle(ActionEvent e) {
-                    citiesSelected.clear();
-                    for (String city: cities) {
-                        CityFilter2 item = new CityFilter2(city, true);
-                        citiesSelected.add(item.getName());
-                        cityListView.setCellFactory(CheckBoxListCell.forListView(new Callback<CityFilter2, ObservableValue<Boolean>>() {
-                            @Override
-                            public ObservableValue<Boolean> call(CityFilter2 item) {
-                                item.onProperty().set(true);
-                                return item.onProperty();
-                            }
-                        }));
-                    }
-                }
-            });
-
-            //deselect all cities
-            deselectAll.setOnAction(new EventHandler<ActionEvent>() {
-                @Override public void handle(ActionEvent e) {
-                    citiesSelected.clear();
-
-                    for (String city: cities) {
-                        CityFilter2 item = new CityFilter2(city, false);
-
-                    cityListView.setCellFactory(CheckBoxListCell.forListView(new Callback<CityFilter2, ObservableValue<Boolean>>() {
-                        @Override
-                        public ObservableValue<Boolean> call(CityFilter2 item) {
-                            item.onProperty().set(false);
-                            return item.onProperty();
+                            cityListView.setCellFactory(CheckBoxListCell.forListView(new Callback<CityFilter2, ObservableValue<Boolean>>() {
+                                @Override
+                                public ObservableValue<Boolean> call(CityFilter2 item) {
+                                    item.onProperty().set(false);
+                                    return item.onProperty();
+                                }
+                            }));
                         }
-                    }));
                     }
-                }
-            });
+                });
 
-            //getting the selected cities from the user
-            confirm.setOnAction(new EventHandler<ActionEvent>() {
-                @Override public void handle(ActionEvent e) {
-                    cityStage.close();
-                }
-            });
+                //getting the selected cities from the user
+                confirm.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent e) {
+                        cityStage.close();
+                    }
+                });
 
-            Scene scene = new Scene(root, 420, 400);
-            cityStage.setScene(scene);
-            scene.getStylesheets().add(getClass().getResource("/ViewStyle.css").toExternalForm());
-            cityStage.showAndWait();
-
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+                Scene scene = new Scene(root, 420, 400);
+                cityStage.setScene(scene);
+                scene.getStylesheets().add(getClass().getResource("/ViewStyle.css").toExternalForm());
+                cityStage.showAndWait();
+            }
+            else{
+                popProblem("Please load dictionary before choosing city");
+            }
+            } catch(Exception e){
+                e.printStackTrace();
+            }
     }
 
 
@@ -418,7 +428,8 @@ public class View implements Observer {
         }
 
         else if (tf_enterQuery.getText().isEmpty() && !tf_loadQueryFile.getText().isEmpty()){
-            //retrievedDocuments = vm.proccessQuery(tf_loadQueryFile.getText(), citiesSelected, stemming.isSelected());
+            runQueryFile(tf_loadQueryFile.getText() + '\\');
+            return;
         }
 
         final PriorityQueue<RetrievedDocument> finRetrievedDocuments = retrievedDocuments;//for handle method
@@ -431,7 +442,7 @@ public class View implements Observer {
             View newController = fxml.getController();
             bp_results = new BorderPane();
             textResults = new TextArea();
-            cb_queries = new ChoiceBox();
+            cb_queries = new ComboBox();
             newController.cb_queries.setDisable(true);
             for (RetrievedDocument retDoc: finRetrievedDocuments) {
                 hyperlinks.add(new Hyperlink(retDoc.get_docName()));
@@ -446,7 +457,8 @@ public class View implements Observer {
                         String docName = hl.getText();
                         for (RetrievedDocument rd : finRetrievedDocuments) {
                             if (rd.get_docName().equals(docName)) {
-                                newController.textResults.setText("HELLO");
+                                newController.textResults.setText(ReadFile2.getTextFromDoc(corpus.getText() + '\\' + rd.get_file(),
+                                        rd.get_docName(), rd.get_startLine(), rd.get_endLine()));
                                 break;
                             }
                         }
@@ -467,8 +479,71 @@ public class View implements Observer {
 
     }
 
-    private void runQueryFile(){
-        
+
+    private void runQueryFile(String path){
+        HashMap <Query, PriorityQueue<RetrievedDocument>> queries = vm.processQueryByFile
+                (path, citiesSelected, stemming.isSelected(), corpus.getText() + '\\');
+        ArrayList<Hyperlink> hyperlinks = new ArrayList<>();
+
+        try{
+            Stage resultStage = new Stage();
+            resultStage.setTitle("IR 2019");
+            FXMLLoader fxml = new FXMLLoader(getClass().getResource("/resultsView.fxml"));
+            Parent root = fxml.load();
+            View newController = fxml.getController();
+            bp_results = new BorderPane();
+            textResults = new TextArea();
+            cb_queries = new ComboBox();
+            newController.cb_queries.setDisable(false);
+            newController.cb_queries.setPromptText("Choose query");
+
+            for (Query q: queries.keySet())
+                newController.cb_queries.getItems().add(q.get_title());
+
+            newController.cb_queries.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
+                @Override
+                public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+
+                    PriorityQueue<RetrievedDocument> results = queries.get(cb_queries.getSelectionModel().getSelectedItem());
+                    if (results != null) {
+                        for (RetrievedDocument rd : results) {
+                            hyperlinks.add(new Hyperlink(rd.get_docName()));
+                        }
+                        newController.resultsListView.getItems().addAll(hyperlinks);
+
+                        for (Hyperlink hl : hyperlinks) {
+                            hl.setOnAction(new EventHandler<ActionEvent>() {
+                                @Override
+                                public void handle(ActionEvent t) {
+                                    String docName = hl.getText();
+                                    for (RetrievedDocument rd : results) {
+                                        if (rd.get_docName().equals(docName)) {
+                                            newController.textResults.setText(ReadFile2.getTextFromDoc(corpus.getText() + '\\' + rd.get_file(),
+                                                    rd.get_docName(), rd.get_startLine(), rd.get_endLine()));
+                                            break;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    else {
+                        newController.resultsListView.getItems().clear();
+                        newController.resultsListView.getItems().add("No results were" + '\n' + "returned by the query");
+                    }
+                }
+            });
+
+
+            Scene scene = new Scene(root, 800, 450);
+            scene.getStylesheets().add(getClass().getResource("/ViewStyle.css").toExternalForm());
+            resultStage.setScene(scene);
+            resultStage.show();
+        }
+
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }
 

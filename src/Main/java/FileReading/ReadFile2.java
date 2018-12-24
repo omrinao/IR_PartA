@@ -326,4 +326,22 @@ public class ReadFile2 implements Runnable {
 
         return toReturn;
     }
+
+    public static String getTextFromDoc (String path, String docName, short startLine, short endLine){
+
+        String valueToReturn = "";
+
+        try {
+            FileReader reader = new FileReader(new File(path));
+            short counter = 0;
+            while (counter < startLine)
+                reader.read();
+            while (counter < endLine)
+                valueToReturn += reader.read();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        return valueToReturn;
+    }
 }
