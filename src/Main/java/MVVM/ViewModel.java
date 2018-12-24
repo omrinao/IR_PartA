@@ -63,7 +63,7 @@ public class ViewModel extends Observable implements Observer {
         return _model.processQuery(query, cities, stemming, corpus, false);
     }
 
-    public HashMap<Query, PriorityQueue<RetrievedDocument>> processQueryByFile
+    public Map<Query, PriorityQueue<RetrievedDocument>> processQueryByFile
             (String queryFile, List<String> cities, boolean stemming, String corpusPath){
         return _model.processQueryFile(queryFile, cities, stemming, corpusPath);
     }

@@ -374,10 +374,15 @@ public class Model extends Observable {
      * @param corpusPath - the path to the corpus for stop words porpuses
      * @return - map of query and its results
      */
-    public HashMap<Query, PriorityQueue<RetrievedDocument>> processQueryFile
+    public Map<Query, PriorityQueue<RetrievedDocument>> processQueryFile
             (String queryFile, List<String> cities, boolean stemming, String corpusPath){
 
-        HashMap<Query, PriorityQueue<RetrievedDocument>> toReturn = new HashMap<>();
+        TreeMap<Query, PriorityQueue<RetrievedDocument>> toReturn = new TreeMap<>(new Comparator<Query>() {
+            @Override
+            public int compare(Query o1, Query o2) {
+                return Integer.compare(o1.get_donNumber(), o2.get_donNumber());
+            }
+        });
         try {
             List<Query> queries = ReadFile2.getQueries(queryFile);
             for (Query q :
