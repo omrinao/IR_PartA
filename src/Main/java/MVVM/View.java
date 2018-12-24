@@ -432,7 +432,7 @@ public class View implements Observer {
             bp_results = new BorderPane();
             textResults = new TextArea();
             cb_queries = new ChoiceBox();
-            cb_queries.setDisable(true);
+            newController.cb_queries.setDisable(true);
             for (RetrievedDocument retDoc: finRetrievedDocuments) {
                 hyperlinks.add(new Hyperlink(retDoc.get_docName()));
             }

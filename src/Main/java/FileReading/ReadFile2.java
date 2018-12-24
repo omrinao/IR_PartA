@@ -326,5 +326,4 @@ public class ReadFile2 implements Runnable {
 
         return toReturn;
     }
-
 }

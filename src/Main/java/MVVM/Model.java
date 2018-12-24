@@ -400,9 +400,9 @@ public class Model extends Observable {
         m.loadDict(details);
 
 
-
         String query = "Falkland petroleum exploration";
         PriorityQueue<RetrievedDocument> retrievedDocuments = m.processQuery(query, new ArrayList<>(), false, m._corpusPath, false);
+
         TreeSet<RetrievedDocument> sorted = new TreeSet<>(new Comparator<RetrievedDocument>() {
             @Override
             public int compare(RetrievedDocument o1, RetrievedDocument o2) {
