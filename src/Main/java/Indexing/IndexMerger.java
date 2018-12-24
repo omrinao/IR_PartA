@@ -36,7 +36,7 @@ public class IndexMerger {
 
         try {
             if (stemming){
-                _postingWriter = new BufferedWriter(new PrintWriter(WORKING_DIR + FINAL_Posting + "STEMM" + TXT, "UTF-8"));
+                _postingWriter = new BufferedWriter(new PrintWriter(WORKING_DIR + FINAL_Posting + "STEM" + TXT, "UTF-8"));
             }
             else {
                 _postingWriter = new BufferedWriter(new PrintWriter(WORKING_DIR + FINAL_Posting + TXT, "UTF-8"));
