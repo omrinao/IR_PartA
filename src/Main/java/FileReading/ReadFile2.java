@@ -270,4 +270,6 @@ public class ReadFile2 implements Runnable {
 
         return toReturn;
     }
+
+    //TO-DO: Read from file the text (static method that get path, file name, start line, end line)
 }

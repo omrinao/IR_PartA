@@ -169,6 +169,7 @@ public class Model extends Observable {
         }
         else if (details[1] != null && !details[1].isEmpty()){
             loadFrom = details[1] + "\\";
+            _writeTo = loadFrom;
         }
         else {
             setChanged();
@@ -336,7 +337,7 @@ public class Model extends Observable {
 
 
         String query = "blood-alcohol fatalities";
-        PriorityQueue<RetrievedDocument> retrievedDocuments = m.proccessQuery(query, new ArrayList<>(), false);
+        PriorityQueue<RetrievedDocument> retrievedDocuments = m.processQuery(query, new ArrayList<>(), false, m._corpusPath);
         TreeSet<RetrievedDocument> sorted = new TreeSet<>(new Comparator<RetrievedDocument>() {
             @Override
             public int compare(RetrievedDocument o1, RetrievedDocument o2) {
