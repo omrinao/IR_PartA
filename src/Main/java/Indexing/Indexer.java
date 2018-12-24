@@ -406,7 +406,7 @@ public class Indexer implements Runnable {
                 _docDictionary.getDocData(docNum)._pointer = pointer;
                 bw.append(postingToBeWritten);
 
-                pointer += postingToBeWritten.getBytes("UTF-8").length;
+                pointer += postingToBeWritten.getBytes().length;
             }
             bw.flush();
 

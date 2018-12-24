@@ -59,6 +59,8 @@ public class View implements Observer {
     public BorderPane bp_results;
     public TextArea textResults;
     public ComboBox cb_queries;
+    public Button btn_showText;
+    private String lastSelected; //to get last hyperlink selected
 
 
     public void setVm(ViewModel vm) {
@@ -443,6 +445,7 @@ public class View implements Observer {
             bp_results = new BorderPane();
             textResults = new TextArea();
             cb_queries = new ComboBox();
+            btn_showText = new Button();
             newController.cb_queries.setDisable(true);
             for (RetrievedDocument retDoc: finRetrievedDocuments) {
                 hyperlinks.add(new Hyperlink(retDoc.get_docName()));
@@ -457,14 +460,23 @@ public class View implements Observer {
                         String docName = hl.getText();
                         for (RetrievedDocument rd : finRetrievedDocuments) {
                             if (rd.get_docName().equals(docName)) {
-                                newController.textResults.setText(ReadFile2.getTextFromDoc
-                                        (corpus.getText() + '\\' + rd.get_file(), rd.get_startLine(), rd.get_endLine()));
+                                newController.textResults.setText("Hello");
+                                newController.lastSelected = ReadFile2.getTextFromDoc
+                                        (corpus.getText() + '\\' + rd.get_file(), rd.get_startLine(), rd.get_endLine());
                                 break;
                             }
                         }
                     }
                 });
             }
+
+            newController.btn_showText.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent e) {
+                    newController.textResults.clear();
+                    newController.textResults.setText(newController.lastSelected);
+                }
+            });
 
             Scene scene = new Scene(root, 800, 450);
             scene.getStylesheets().add(getClass().getResource("/ViewStyle.css").toExternalForm());
@@ -518,14 +530,23 @@ public class View implements Observer {
                                     String docName = hl.getText();
                                     for (RetrievedDocument rd : results) {
                                         if (rd.get_docName().equals(docName)) {
-                                            newController.textResults.setText(ReadFile2.getTextFromDoc
-                                                    (corpus.getText() + '\\' + rd.get_file(), rd.get_startLine(), rd.get_endLine()));
+                                            newController.textResults.setText("Hello");
+                                            newController.lastSelected = ReadFile2.getTextFromDoc
+                                                    (corpus.getText() + '\\' + rd.get_file(), rd.get_startLine(), rd.get_endLine());
                                             break;
                                         }
                                     }
                                 }
                             });
                         }
+
+                        newController.btn_showText.setOnAction(new EventHandler<ActionEvent>() {
+                            @Override
+                            public void handle(ActionEvent e) {
+                                newController.textResults.clear();
+                                newController.textResults.setText(newController.lastSelected);
+                            }
+                        });
                     }
                     else {
                         newController.resultsListView.getItems().clear();

@@ -43,7 +43,7 @@
             <VBox prefHeight="299.0" prefWidth="281.0" spacing="20.0" BorderPane.alignment="CENTER">
                <children>
                   <TextArea fx:id="textResults" prefHeight="200.0" prefWidth="250.0" />
-                  <Button mnemonicParsing="false" text="Show Text" />
+                  <Button fx:id="btn_showText" mnemonicParsing="false" text="Show Text" />
                </children>
                <BorderPane.margin>
                   <Insets left="20.0" top="50.0" />
