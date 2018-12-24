@@ -30,7 +30,7 @@ public class CityIndex implements Serializable{
         }
 
         catch (Exception e){
-
+            e.printStackTrace();
         }
 
     }
