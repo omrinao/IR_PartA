@@ -493,6 +493,7 @@ public class View implements Observer {
 
 
     private void runQueryFile(String path){
+
         Map <Query, PriorityQueue<RetrievedDocument>> queries = vm.processQueryByFile
                 (path, citiesSelected, stemming.isSelected(), corpus.getText() + '\\');
         ArrayList<Hyperlink> hyperlinks = new ArrayList<>();
@@ -524,6 +525,7 @@ public class View implements Observer {
                     newController.textResults.clear();
                     hyperlinks.clear();
                     PriorityQueue<RetrievedDocument> results = stringQueries.get(newController.cb_queries.getSelectionModel().getSelectedItem());
+                  
                     if (results != null) {
                         for (RetrievedDocument rd : results) {
                             hyperlinks.add(new Hyperlink(rd.get_docName()));

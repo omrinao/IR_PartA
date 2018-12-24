@@ -203,4 +203,27 @@ public abstract class ARanker implements IRanker  {
         }
     }
 
+    protected void rankByPosition(HashMap<String, HashMap<String, PostingTermData>> allDocs,
+                                  Set<RetrievedDocument> cityDocs, HashMap<String, IntWrapper> query, double value){
+
+        for (RetrievedDocument document:
+                cityDocs){
+            HashMap<String, PostingTermData> docMatchingTerms = allDocs.get(document.get_docNum());
+
+            if (docMatchingTerms==null) // should never enter here
+                continue;
+
+            double rank = 0;
+            for (String termInDoc:
+                    docMatchingTerms.keySet()){
+                PostingTermData t = docMatchingTerms.get(termInDoc);
+                byte first20 = t.get_locations()[0];
+                byte last20 = t.get_locations()[1];
+
+                rank += (first20 +last20);
+            }
+            document.add_rank(value*rank);
+        }
+    }
+
 }

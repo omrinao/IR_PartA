@@ -17,7 +17,6 @@ public class RankerNoSemantics extends ARanker {
 
     @Override
     public PriorityQueue<RetrievedDocument> rank(HashMap<String, IntWrapper> query, List<String> cities){
-        PriorityQueue<RetrievedDocument> toReturn = new PriorityQueue<>();
 
         HashMap<String, List<PostingTermData>> termsInQuery = this.extractTermsData(query);
         System.out.println("Got all terms");
@@ -33,10 +32,15 @@ public class RankerNoSemantics extends ARanker {
 
         Set<RetrievedDocument> docsMatchingCity = this.docsMatchingCity(orderedDocNum);
         System.out.println("Matched by city");
-        System.out.println("Starting to rank");
-        this.rankByBM25(docsWithQueryTerms, docsMatchingCity, query, 1);
 
-        toReturn.addAll(docsMatchingCity);
+        this.rankByBM25(docsWithQueryTerms, docsMatchingCity, query, 0.5);
+        System.out.println("Ranked by BM25");
+
+        this.rankByPosition(docsWithQueryTerms, docsMatchingCity, query, 0.5);
+        System.out.println("Ranked by positioning");
+
+        PriorityQueue<RetrievedDocument> toReturn = new PriorityQueue<>(docsMatchingCity);
+        System.out.println("Finished query: " + query.keySet() +" --- Returned " + toReturn.size() + " docs\n");
         if (toReturn.size() > 50){
             PriorityQueue<RetrievedDocument> tmp = toReturn;
             toReturn = new PriorityQueue<>();

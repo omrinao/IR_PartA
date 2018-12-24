@@ -26,9 +26,6 @@ public class ViewModel extends Observable implements Observer {
         _model.loadDict(args);
     }
 
-    public void showDict(String stemming) {
-        _model.showDict(stemming);
-    }
 
     /**
      * This method is called whenever the observed object is changed. An
