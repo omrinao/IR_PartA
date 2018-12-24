@@ -4,7 +4,6 @@ import Indexing.DocumentDictionary;
 import Indexing.PostingTermData;
 import Indexing.TermData;
 import Parse.IntWrapper;
-import javafx.fxml.Initializable;
 
 import java.io.*;
 import java.util.*;
@@ -84,6 +83,14 @@ public abstract class ARanker implements IRanker  {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return toReturn;
+    }
+
+    protected HashMap<String, HashMap<String, PostingTermData>> extractCitiesInText(){
+        HashMap<String , HashMap<String, PostingTermData>> toReturn = new HashMap<>();
+
+
 
         return toReturn;
     }
@@ -203,6 +210,13 @@ public abstract class ARanker implements IRanker  {
         }
     }
 
+    /**
+     * method to rank documents by the terms position
+     * @param allDocs - all docs retrieved
+     * @param cityDocs - docs retrieved by city
+     * @param query - the query
+     * @param value - the value of this ranking
+     */
     protected void rankByPosition(HashMap<String, HashMap<String, PostingTermData>> allDocs,
                                   Set<RetrievedDocument> cityDocs, HashMap<String, IntWrapper> query, double value){
 
@@ -220,7 +234,7 @@ public abstract class ARanker implements IRanker  {
                 byte first20 = t.get_locations()[0];
                 byte last20 = t.get_locations()[1];
 
-                rank += (first20 +last20);
+                rank += (first20 + last20)*2;
             }
             document.add_rank(value*rank);
         }
