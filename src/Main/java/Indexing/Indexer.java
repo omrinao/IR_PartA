@@ -203,6 +203,7 @@ public class Indexer implements Runnable {
         }
 
         writePartialPostings(); // after finished all documents, empty the final partial posting
+        writeToDocPosting();
 
         System.out.println("FINISHED INDEXING at: " + java.time.LocalTime.now());
         System.out.println("doc indexed: "+m_docsIndexed);
@@ -212,7 +213,6 @@ public class Indexer implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //TreeMap<String, TermData> sorted = new TreeMap<>(_corpusDictionary);
 
         _avgDocLength = totalDocsLength/m_docsIndexed;
         _docDictionary.set_avgDocLength(_avgDocLength);
@@ -368,9 +368,9 @@ public class Indexer implements Runnable {
         try {
             if (!_partialPosting.isEmpty())
                 writePartialPosting(partialName);
-            if (!_docData.isEmpty()){
-                writeToDocPosting();
-            }
+//            if (!_docData.isEmpty()){
+//                writeToDocPosting();
+//            }
         }
         catch (IOException e){
             /* do something here */
@@ -379,14 +379,14 @@ public class Indexer implements Runnable {
 
         _partialPostingCount++;
         _partialPosting.clear(); // maybe clear
-        _docData.clear(); // bug fix, need to test
+        //_docData.clear(); // bug fix, need to test
     }
 
     /**
      * method to write to doc posting
      * @throws IOException - if error occurred during writing
      */
-    private void writeToDocPosting() throws IOException{
+    private void writeToDocPosting(){
         String path = null;
         if (_stemmer)
             path = WORKING_DIRECTORY + DOC_POSTING +STEMMER + TXT;
@@ -394,8 +394,8 @@ public class Indexer implements Runnable {
             path = WORKING_DIRECTORY + DOC_POSTING + TXT;
 
         try(
-                BufferedWriter bw = new BufferedWriter(new PrintWriter(new FileWriter(path, true)))
-                ){
+                BufferedWriter bw = new BufferedWriter(new PrintWriter(path, "UTF-8"))
+        ){
             TreeMap<Integer, PostingDocData> sorted = new TreeMap<>(_docData);
             long pointer = _docDictionary.get_nextPointer();
 
@@ -411,6 +411,10 @@ public class Indexer implements Runnable {
             bw.flush();
 
             _docDictionary.set_nextPointer(pointer);
+        }
+        catch (IOException e){
+            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 

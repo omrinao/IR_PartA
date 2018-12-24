@@ -401,12 +401,13 @@ public class Model extends Observable {
     public static void main(String[] args){
         Model m = new Model();
 
-        m._writeTo = "C:\\Users\\omri\\Desktop\\IR_PartA\\";
-        m._corpusPath = "C:\\Users\\omri\\Desktop\\corpus\\";
+      
+        m._writeTo = "C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\Doc Test\\";
+        m._corpusPath = "C:\\Users\\חגי קלינהוף\\Desktop\\שנה ג'\\סמסטר ה'\\אחזור מידע\\פרויקט מנוע\\Part 1 tests\\corpus\\";
         String[] details = {"false", m._corpusPath, m._writeTo};
         m.loadDict(details);
-
 /*
+
         String query = "Falkland petroleum exploration";
         PriorityQueue<RetrievedDocument> retrievedDocuments = m.processQuery(query, new ArrayList<>(), false, m._corpusPath, false);
 
@@ -433,6 +434,7 @@ public class Model extends Observable {
 
                 String capturedLine = ra.readLine();
                 bw.write(capturedLine+"\n");
+                bw.flush();
             }
         }
         catch (IOException e){
