@@ -70,19 +70,21 @@ public class Indexer implements Runnable {
                 d.calcLength(); // setting length of the document for later use
                 totalDocsLength += d.getLength();
 
+                PriorityQueue <StrongEntity> strongEntities = new PriorityQueue<>();
                 LinkedHashMap<String, ArrayList<Integer>> docTerms = d.getTermsMap();
                 for (String term: docTerms.keySet()) {//inserting to dictionary + partial posting
+                    int totalFreq = docTerms.get(term).size();
 
                     if (term.equals(term.toLowerCase())){ // it's a lower case term or non alphabetic term
                         if (_corpusDictionary.containsKey(term)){
                             TermData t = _corpusDictionary.get(term);
                             t.m_df = t.m_df+1;                        // adding to document frequency
-                            t.m_totalTF += docTerms.get(term).size();   // adding to total tf count
+                            t.m_totalTF += totalFreq;   // adding to total tf count
                         }
                         else if (_corpusDictionary.containsKey(term.toUpperCase())) { // upper case term now observed with lower case!
                             TermData toLowerTerm = _corpusDictionary.remove(term.toUpperCase());
                             toLowerTerm.m_df += 1;
-                            toLowerTerm.m_totalTF += docTerms.get(term).size();
+                            toLowerTerm.m_totalTF += totalFreq;
 
                             _corpusDictionary.put(term, toLowerTerm);
                         }
@@ -114,12 +116,12 @@ public class Indexer implements Runnable {
                         if (_corpusDictionary.containsKey(term.toLowerCase())){ // it's an upper case but have seen a lower case before
                             TermData t = _corpusDictionary.get(term.toLowerCase());
                             t.m_df += 1;
-                            t.m_totalTF += docTerms.get(term).size();
+                            t.m_totalTF += totalFreq;
                         }
                         else if (_corpusDictionary.containsKey(term)){ // have seen only upper case
                             TermData t = _corpusDictionary.get(term);
                             t.m_df += 1;
-                            t.m_totalTF += docTerms.get(term).size();
+                            t.m_totalTF += totalFreq;
                         }
                         else { // never seen before
                             TermData newTerm = new TermData(1, docTerms.get(term).size());
@@ -140,6 +142,12 @@ public class Indexer implements Runnable {
                             treeSet.add(termData);
                             _partialPosting.put(term, treeSet);
                         }
+
+                        if (term.equals(term.toUpperCase()) && !term.matches(".*\\d+.*")){
+                            StrongEntity st = new StrongEntity(term, ((float)totalFreq/d.getMaxTF())*100);
+                            strongEntities.add(st);
+                        }
+
                     }
 
 
@@ -180,7 +188,8 @@ public class Indexer implements Runnable {
                 Integer docNum = Integer.valueOf(d.getDocNum());
                 _docDictionary.insertDoc(docNum, -1, d.get_docName());
                 _docData.put(docNum,
-                        new PostingDocData(d.getMaxTF(), docTerms.size(), d.get_startLine(), d.get_endLine(), d.get_path(), d.getLength(), fixedCity));
+                        new PostingDocData(d.getMaxTF(), docTerms.size(), d.get_startLine(),
+                                d.get_endLine(), d.get_path(), d.getLength(), fixedCity, strongEntities));
 
                 if (!d.getLanguage().isEmpty()){
                     _docLanguages.add(d.getLanguage());

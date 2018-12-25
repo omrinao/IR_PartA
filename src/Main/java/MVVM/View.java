@@ -447,6 +447,7 @@ public class View implements Observer {
             cb_queries = new ComboBox();
             btn_showText = new Button();
             newController.cb_queries.setDisable(true);
+            newController.cb_queries.setVisible(false);
             for (RetrievedDocument retDoc: finRetrievedDocuments) {
                 hyperlinks.add(new Hyperlink(retDoc.get_docName()));
             }
@@ -460,7 +461,7 @@ public class View implements Observer {
                         String docName = hl.getText();
                         for (RetrievedDocument rd : finRetrievedDocuments) {
                             if (rd.get_docName().equals(docName)) {
-                                newController.textResults.setText("Hello");
+                                newController.textResults.setText(rd.get_strongEntities().toString());
                                 newController.lastSelected = ReadFile2.getTextFromDoc
                                         (corpus.getText() + '\\' + rd.get_file(), rd.get_startLine(), rd.get_endLine());
                                 break;
@@ -539,7 +540,7 @@ public class View implements Observer {
                                     String docName = hl.getText();
                                     for (RetrievedDocument rd : results) {
                                         if (rd.get_docName().equals(docName)) {
-                                            newController.textResults.setText("Hello");
+                                            newController.textResults.setText(rd.get_strongEntities().toString());
                                             newController.lastSelected = ReadFile2.getTextFromDoc
                                                     (corpus.getText() + '\\' + rd.get_file(), rd.get_startLine(), rd.get_endLine());
                                             break;
