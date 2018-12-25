@@ -159,9 +159,14 @@ public class Model extends Observable {
      */
     public void loadDict(String[] details) {
         String stemming = details[0];
+        String outputGiven = details[1];
         String loadFrom = null;
 
         if (_writeTo != null && !_writeTo.isEmpty()){
+            if (outputGiven!=null && !outputGiven.isEmpty()){
+                _writeTo = outputGiven;
+            }
+
             loadFrom = _writeTo;
         }
         else if (details[1] != null && !details[1].isEmpty()){

@@ -53,11 +53,19 @@ public abstract class ARanker implements IRanker  {
         ) {
             for (String term :
                     query.keySet()){
-                if (!_corpusDictionary.containsKey(term)){
-                    continue;
+                String word = term;
+                if (!_corpusDictionary.containsKey(word)){
+                    word = word.toLowerCase();
+                    if (!_corpusDictionary.containsKey(word)){
+                        word = word.toUpperCase();
+                        if (!_corpusDictionary.containsKey(word)){
+                            continue;
+                        }
+                    }
+
                 }
 
-                long pointer = _corpusDictionary.get(term).getM_pointer();
+                long pointer = _corpusDictionary.get(word).getM_pointer();
                 ra.seek(pointer);
                 String allPostingData = ra.readLine();
                 int start = allPostingData.indexOf("#~");
@@ -78,7 +86,7 @@ public abstract class ARanker implements IRanker  {
                     totalTermOccurrences.add(termData);
                 }
 
-                toReturn.put(term, totalTermOccurrences);
+                toReturn.put(word, totalTermOccurrences);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -121,7 +129,7 @@ public abstract class ARanker implements IRanker  {
      * @param docNums - ordered set of doc numbers
      * @return - set of the corresponding posting data
      */
-    protected Set<RetrievedDocument> docsMatchingCity(TreeSet<Integer> docNums){
+    protected Set<RetrievedDocument> docsMatchingCity(HashMap<String, HashMap<String, PostingTermData>> docNums){
         Set<RetrievedDocument> matchingDoc = new LinkedHashSet<>();
         String path = _outputPath + _docsPosting;
         if (_stemming){
@@ -133,8 +141,9 @@ public abstract class ARanker implements IRanker  {
                 RandomAccessFile ra = new RandomAccessFile(path, "r")
                 ){
             long pointer = 0;
-            for (Integer doc :
-                    docNums){
+            for (String docS :
+                    docNums.keySet()){
+                Integer doc = Integer.valueOf(docS);
                 pointer = _documentDictionary.getPointer(doc);
                 String officialName = _documentDictionary.getName(doc);
                 if (pointer == -1){ // should never enter here
@@ -217,7 +226,7 @@ public abstract class ARanker implements IRanker  {
                 int termCount = docMatchingTerms.get(termInDoc).get_termOccurrences();
                 double normalizedDocLength = (document._length/_avgDocLength);
 
-                int wordQueryCount = query.get(termInDoc).get_value();
+                int wordQueryCount = 1; //query.get(termInDoc).get_value();
                 double numerator = (k+1)*termCount;
                 double denominator = termCount + k*(1-b+b*normalizedDocLength);
                 double normalizedDF = Math.log10((_totalDocNum+1)/_corpusDictionary.get(termInDoc).getM_df());

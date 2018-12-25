@@ -27,14 +27,14 @@ public class RankerNoSemantics extends ARanker {
 
         HashMap<String, HashMap<String, PostingTermData>> docsWithQueryTerms = this.getDocumentsTerms(termsInQuery);
         System.out.println("Sorted terms per document");
-
+/*
         TreeSet<Integer> orderedDocNum = new TreeSet<>();
         for (String strNum :
                 docsWithQueryTerms.keySet()){
             orderedDocNum.add(Integer.valueOf(strNum));
         }
-
-        Set<RetrievedDocument> docsMatchingCity = this.docsMatchingCity(orderedDocNum);
+*/
+        Set<RetrievedDocument> docsMatchingCity = this.docsMatchingCity(docsWithQueryTerms);
         System.out.println("Matched by city");
 
         this.rankByBM25(docsWithQueryTerms, docsMatchingCity, query, 0.99);
