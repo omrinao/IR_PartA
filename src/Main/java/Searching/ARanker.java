@@ -155,6 +155,7 @@ public abstract class ARanker implements IRanker  {
                 String city = docData[6];
 
                 if (_cities.isEmpty() || _cities.contains(city)){
+                    ArrayList<String> strongEntities = getEntities(docData);
                     RetrievedDocument retrievedDocument = new RetrievedDocument();
                     retrievedDocument.set_city(city);
                     retrievedDocument.set_docNum(String.valueOf(doc));
@@ -163,6 +164,7 @@ public abstract class ARanker implements IRanker  {
                     retrievedDocument.set_endLine(endLine);
                     retrievedDocument.set_file(relative);
                     retrievedDocument.set_docName(officialName);
+                    retrievedDocument.set_strongEntities(strongEntities);
 
                     matchingDoc.add(retrievedDocument);
                 }
@@ -174,6 +176,22 @@ public abstract class ARanker implements IRanker  {
         }
 
         return matchingDoc;
+    }
+
+    /**
+     * method to extract strong entities
+     * @param docData - split array of document posting
+     * @return - list of strong entities
+     */
+    private ArrayList<String> getEntities(String[] docData) {
+        ArrayList<String> toReturn = new ArrayList<>();
+        String e1 = docData[7], e2=docData[8], e3=docData[9], e4=docData[10], e5=docData[11];
+        toReturn.add(e1);
+        toReturn.add(e2);
+        toReturn.add(e3);
+        toReturn.add(e4);
+        toReturn.add(e5);
+        return toReturn;
     }
 
     /**
@@ -234,7 +252,7 @@ public abstract class ARanker implements IRanker  {
                 byte first20 = t.get_locations()[0];
                 byte last20 = t.get_locations()[1];
 
-                rank += (first20 + last20)*2;
+                rank += (first20 + last20)*5;
             }
             document.add_rank(value*rank);
         }

@@ -37,10 +37,10 @@ public class RankerNoSemantics extends ARanker {
         Set<RetrievedDocument> docsMatchingCity = this.docsMatchingCity(orderedDocNum);
         System.out.println("Matched by city");
 
-        this.rankByBM25(docsWithQueryTerms, docsMatchingCity, query, 1);
+        this.rankByBM25(docsWithQueryTerms, docsMatchingCity, query, 0.99);
         System.out.println("Ranked by BM25");
 
-        this.rankByPosition(docsWithQueryTerms, docsMatchingCity, query, 0);
+        this.rankByPosition(docsWithQueryTerms, docsMatchingCity, query, 0.01);
         System.out.println("Ranked by positioning");
 
         PriorityQueue<RetrievedDocument> toReturn = new PriorityQueue<>(docsMatchingCity);
