@@ -461,7 +461,7 @@ public class View implements Observer {
                         String docName = hl.getText();
                         for (RetrievedDocument rd : finRetrievedDocuments) {
                             if (rd.get_docName().equals(docName)) {
-                                newController.textResults.setText(rd.get_strongEntities().toString());
+                                newController.textResults.setText(newController.fixStrongEntities(rd.get_strongEntities().toString()));
                                 newController.lastSelected = ReadFile2.getTextFromDoc
                                         (corpus.getText() + '\\' + rd.get_file(), rd.get_startLine(), rd.get_endLine());
                                 break;
@@ -540,7 +540,7 @@ public class View implements Observer {
                                     String docName = hl.getText();
                                     for (RetrievedDocument rd : results) {
                                         if (rd.get_docName().equals(docName)) {
-                                            newController.textResults.setText(rd.get_strongEntities().toString());
+                                            newController.textResults.setText(newController.fixStrongEntities(rd.get_strongEntities().toString()));
                                             newController.lastSelected = ReadFile2.getTextFromDoc
                                                     (corpus.getText() + '\\' + rd.get_file(), rd.get_startLine(), rd.get_endLine());
                                             break;
@@ -575,6 +575,30 @@ public class View implements Observer {
         catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    /**
+     * this method will fix the view of the strong entities
+     * @param strongEntities
+     * @return
+     */
+    private String fixStrongEntities(String strongEntities){
+        String valueToReturn = "";
+        String rank = "";
+        String entity = "";
+        strongEntities = strongEntities.substring(1, strongEntities.length() - 1);
+        String[] entities = strongEntities.split(", ");
+        String[] splitted;
+        for (int i = 0; i < entities.length; i++) {
+            splitted = entities[i].split("-");
+            if(splitted.length == 2) {
+                entity = splitted[0];
+                rank = splitted[1];
+                valueToReturn = valueToReturn + (i + 1) + ". Entity: " + entity + " " + '\t' + "Rank: " + rank + '\n';
+            }
+
+        }
+        return valueToReturn;
     }
 }
 
