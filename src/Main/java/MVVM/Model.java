@@ -164,7 +164,7 @@ public class Model extends Observable {
 
         if (_writeTo != null && !_writeTo.isEmpty()){
             if (outputGiven!=null && !outputGiven.isEmpty()){
-                _writeTo = outputGiven;
+                _writeTo = outputGiven + "\\";
             }
 
             loadFrom = _writeTo;
@@ -194,11 +194,11 @@ public class Model extends Observable {
 
             }catch (IOException e ){
                 setChanged();
-                notifyObservers("Error at openening file: " + e.getMessage());
+                notifyObservers("Error at opening file: " + e.getMessage());
 
             }catch (ClassNotFoundException f){
                 setChanged();
-                notifyObservers("Error at loading dicitionary: " + f.getMessage());
+                notifyObservers("Error at loading dictionary: " + f.getMessage());
             }
         }
 
@@ -269,6 +269,12 @@ public class Model extends Observable {
     public PriorityQueue<RetrievedDocument> processQuery
     (String query, List<String> cities, boolean stemming, String corpus, boolean fileQuery){
 
+        if (_loadedDict==null || _loadedDocDict==null){
+            setChanged();
+            notifyObservers("Error!\nYou must load the dictionary first in order to make a search");
+            return null;
+        }
+
         IRanker r = new RankerNoSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo);
         Searcher s = new Searcher(r, ReadFile2.getStopWords(corpus), stemming);
 
@@ -292,15 +298,14 @@ public class Model extends Observable {
      */
     public TreeSet<String> getCities(String outputDirectory, boolean stemming){
 
-        if (_writeTo != null && !_writeTo.isEmpty()){
-            outputDirectory = _writeTo;
-        }
-        else if (outputDirectory != null && !outputDirectory.isEmpty()){
+
+        if (outputDirectory != null && !outputDirectory.isEmpty()){
             _writeTo = outputDirectory + "\\";
         }
-        else {
+        else if (_writeTo==null || _writeTo.isEmpty()) {
             setChanged();
-            notifyObservers("Error!\n" + "Please specify a directory of a proper dictionary" );
+            notifyObservers("Error!\n" + "Please specify a directory of a proper cities file" );
+            return null;
         }
 
         String stem = "";
@@ -320,7 +325,7 @@ public class Model extends Observable {
 
         }catch (ClassNotFoundException f){
             setChanged();
-            notifyObservers("Error at loading dictionary: " + f.getMessage());
+            notifyObservers("Error at loading cities: " + f.getMessage());
         }
 
         return null;
@@ -345,7 +350,7 @@ public class Model extends Observable {
 
             for (RetrievedDocument d :
                     top50){
-                String toBeWritten = String.format("%s %s %s %s %s %s", queryNum, "0", d.get_docName(), "1", d.get_rank(), "dude");
+                String toBeWritten = String.format("%s %s %s %s %.3f %s", queryNum, "0", d.get_docName(), "1", d.get_rank(), "dude");
                 pw.println(toBeWritten);
             }
         }
@@ -353,6 +358,27 @@ public class Model extends Observable {
             System.out.println("Failed writing results to file");
         }
 
+    }
+
+    private void writeQueryResultsByFile(TreeMap<Query, PriorityQueue<RetrievedDocument>> toWrite){
+        String path = _writeTo + "fileQueryResults.txt";
+        try(
+                PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(path)))
+        ){
+
+            for (Query q :
+                    toWrite.keySet()){
+                for (RetrievedDocument d :
+                        toWrite.get(q)){
+                    String toBeWritten = String.format("%s %s %s %s %.3f %s", q.get_number(), "0", d.get_docName(), "1", d.get_rank(), "dude");
+                    pw.println(toBeWritten);
+                }
+
+            }
+        }
+        catch (IOException e){
+            System.out.println("Failed writing results to file");
+        }
     }
 
     /**
@@ -367,6 +393,12 @@ public class Model extends Observable {
     public Map<Query, PriorityQueue<RetrievedDocument>> processQueryFile
             (String queryFile, List<String> cities, boolean stemming, String corpusPath){
 
+        if (_loadedDict==null || _loadedDocDict==null){
+            setChanged();
+            notifyObservers("Error!\nYou must load the dictionary first in order to make a search");
+            return null;
+        }
+
         TreeMap<Query, PriorityQueue<RetrievedDocument>> toReturn = new TreeMap<>(new Comparator<Query>() {
             @Override
             public int compare(Query o1, Query o2) {
@@ -379,8 +411,10 @@ public class Model extends Observable {
                     queries){
                 PriorityQueue<RetrievedDocument> top50 = processQuery(q.get_title(), cities, stemming, corpusPath, true);
                 toReturn.put(q, top50);
-                writeQueryResults(top50, q.get_number(), true);
+                // writeQueryResults(top50, q.get_number(), true);
             }
+
+            writeQueryResultsByFile(toReturn);
         }
         catch (IOException e){
             System.out.println("Failed parsing queries");

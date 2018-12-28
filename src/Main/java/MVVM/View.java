@@ -69,10 +69,11 @@ public class View implements Observer {
 
     /**
      * this method will allow the user to select a directory from the computer
-     * @param actionEvent
+     * @param actionEvent -mouse click event
      */
     public void corpusChoose(ActionEvent actionEvent) {
 
+        actionEvent.consume();
         try {
             DirectoryChooser directoryChooser = new DirectoryChooser();
             File selectedDirectory =
@@ -84,16 +85,16 @@ public class View implements Observer {
                 corpus.setText(selectedDirectory.getAbsolutePath());
             }
         } catch (Exception e) {
-
+            System.out.println("Error opening directory chooser. Info: " + e.getMessage());
         }
     }
 
     /**
      * this method will allow the user to select a directory from the computer
-     * @param actionEvent
+     * @param actionEvent - mouse click event
      */
     public void outputChoose(ActionEvent actionEvent) {
-
+        actionEvent.consume();
         try {
             DirectoryChooser directoryChooser = new DirectoryChooser();
             File selectedDirectory =
@@ -105,16 +106,17 @@ public class View implements Observer {
                 dictpost.setText(selectedDirectory.getAbsolutePath());
             }
         } catch (Exception e) {
-
+            System.out.println("Error opening directory chooser. Info: " + e.getMessage());
         }
     }
 
     /**
      * this method will execute the user input
-     * @param actionEvent
+     * @param actionEvent - mouse click
      */
     public void executeEvent(ActionEvent actionEvent) {
 
+        actionEvent.consume();
         try {
             String [] details = new String[3];
             details[0] = String.valueOf(stemming.isSelected());
@@ -148,10 +150,11 @@ public class View implements Observer {
 
     /**
      * this method will send to the view model a request for resetting from the user
-     * @param actionEvent
+     * @param actionEvent - mouse click
      */
     public void resetEvent(ActionEvent actionEvent) {
 
+        actionEvent.consume();
         try {
             String [] details = new String[2];
             details[0] = corpus.getText();
@@ -167,21 +170,22 @@ public class View implements Observer {
 
     /**
      * this method will send to the view model a request to load the dictionary
-     * @param actionEvent
+     * @param actionEvent - mouse click
      */
     public void loadDictEvent(ActionEvent actionEvent) {
 
+        actionEvent.consume();
         try {
             String[] args = {String.valueOf(stemming.isSelected()), dictpost.getText()};
             vm.loadDict(args);
         } catch (Exception e) {
-
+            System.out.println("Error while loading dictionary. Info: " + e.getMessage());
         }
     }
 
     /**
      * this method will send to the view model a request to view the dictionary
-     * @param actionEvent
+     * @param actionEvent - mouse click
      */
     public void showDictEvent(ActionEvent actionEvent) {
 
@@ -263,7 +267,7 @@ public class View implements Observer {
     /**
      * a method to pop errors with a description
      *
-     * @param description - of the error occured
+     * @param description - of the error occurred
      */
     private void popProblem(String description) {
         Alert prob = new Alert(Alert.AlertType.ERROR);
@@ -277,10 +281,11 @@ public class View implements Observer {
 
     /**
      * this method will allow the user to select a directory from the computer
-     * @param actionEvent
+     * @param actionEvent - mouse click
      */
     public void queryChoose(ActionEvent actionEvent) {
 
+        actionEvent.consume();
         try {
             FileChooser fileChooser = new FileChooser();
             File selectedFile =
@@ -292,18 +297,19 @@ public class View implements Observer {
                 tf_loadQueryFile.setText(selectedFile.getAbsolutePath());
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error while choosing file. Info: " + e.getMessage());
         }
     }
 
     /**
      *this method will allow the user to choose city/cities to retrieve documents from
-     * @param actionEvent
+     * @param actionEvent - mouse click
      */
     public void cityChoose(ActionEvent actionEvent){
+        actionEvent.consume();
         try {
-            if (vm.getCities(dictpost.getText(), stemming.isSelected()) != null) {
-                TreeSet<String> cities = vm.getCities(dictpost.getText(), stemming.isSelected());
+            TreeSet<String> cities = vm.getCities(dictpost.getText(), stemming.isSelected());
+            if (cities != null) {
                 Stage cityStage = new Stage();
                 cityStage.setTitle("City Chooser");
 
@@ -397,9 +403,9 @@ public class View implements Observer {
                 scene.getStylesheets().add(getClass().getResource("/ViewStyle.css").toExternalForm());
                 cityStage.showAndWait();
             }
-            else{
-                popProblem("Please load dictionary before choosing city");
-            }
+           /* else{
+                popProblem("Please load dictionary before choosing city"); // ?
+            }*/
             } catch(Exception e){
                 e.printStackTrace();
             }
@@ -407,6 +413,7 @@ public class View implements Observer {
 
 
     public void runQuery (MouseEvent actionEvent){
+        actionEvent.consume();
 
         PriorityQueue<RetrievedDocument> retrievedDocuments = new PriorityQueue<>();
         ArrayList<Hyperlink> hyperlinks = new ArrayList<>();
@@ -431,6 +438,10 @@ public class View implements Observer {
 
         else if (tf_enterQuery.getText().isEmpty() && !tf_loadQueryFile.getText().isEmpty()){
             runQueryFile(tf_loadQueryFile.getText() + '\\');
+            return;
+        }
+
+        if (retrievedDocuments == null){
             return;
         }
 
@@ -497,6 +508,9 @@ public class View implements Observer {
 
         Map <Query, PriorityQueue<RetrievedDocument>> queries = vm.processQueryByFile
                 (path, citiesSelected, stemming.isSelected(), corpus.getText() + '\\');
+        if (queries==null){
+            return;
+        }
         ArrayList<Hyperlink> hyperlinks = new ArrayList<>();
         HashMap<String, PriorityQueue<RetrievedDocument>> stringQueries = new HashMap<>();
         for (Query q: queries.keySet()) {
