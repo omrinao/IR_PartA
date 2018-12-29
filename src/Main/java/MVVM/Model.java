@@ -267,7 +267,7 @@ public class Model extends Observable {
      * @return - priority queue of relevant documents
      */
     public PriorityQueue<RetrievedDocument> processQuery
-    (String query, List<String> cities, boolean stemming, String corpus, boolean fileQuery){
+    (String query, List<String> cities, boolean stemming, String corpus, boolean fileQuery, boolean semantics){
 
         PriorityQueue<RetrievedDocument> top50 = new PriorityQueue<>();
 
@@ -276,11 +276,18 @@ public class Model extends Observable {
             notifyObservers("Error!\nYou must load the dictionary first in order to make a search");
             return null;
         }
-
-        HashSet<String> stopWords = ReadFile2.getStopWords(corpus);
-        //IRanker r = new RankerNoSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo);
         try {
-            IRanker r = new RankerWithSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo, stopWords);
+
+            HashSet<String> stopWords = ReadFile2.getStopWords(corpus);
+            IRanker r;
+            if (!semantics){
+                r = new RankerNoSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo);
+            }
+            else {
+                r = new RankerWithSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo, stopWords);
+            }
+
+
             Searcher s = new Searcher(r, stopWords, stemming);
 
             System.out.println("Starting to search and rank");
@@ -294,10 +301,10 @@ public class Model extends Observable {
         catch (IOException e){
             e.printStackTrace();
             System.out.println(e.getMessage());
+            setChanged();
+            notifyObservers("Error occurred \nPlease make sure that all paths are correct!");
+            return null;
         }
-
-
-
 
         return top50;
     }
@@ -407,7 +414,7 @@ public class Model extends Observable {
      * @return - map of query and its results
      */
     public Map<Query, PriorityQueue<RetrievedDocument>> processQueryFile
-            (String queryFile, List<String> cities, boolean stemming, String corpusPath){
+            (String queryFile, List<String> cities, boolean stemming, String corpusPath, boolean semantics){
 
         if (_loadedDict==null || _loadedDocDict==null){
             setChanged();
@@ -423,10 +430,19 @@ public class Model extends Observable {
         });
         try {
             List<Query> queries = ReadFile2.getQueries(queryFile);
+            HashSet<String> stopWords = ReadFile2.getStopWords(corpusPath);
+            IRanker r;
+            if (!semantics){
+                r = new RankerNoSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo);
+            }
+            else {
+                r = new RankerWithSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo, stopWords);
+            }
+            Searcher s = new Searcher(r, stopWords, stemming);
+
             for (Query q :
                     queries){
-                /* need to be changed for better performance */
-                PriorityQueue<RetrievedDocument> top50 = processQuery(q.get_title(), cities, stemming, corpusPath, true);
+                PriorityQueue<RetrievedDocument> top50 = s.getRelevantDocuments(q.get_title(), cities);
                 toReturn.put(q, top50);
             }
 

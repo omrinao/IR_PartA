@@ -254,7 +254,7 @@ public class ReadFile2 implements Runnable {
      * @param corpusPath - the path of the corup
      * @return - hash set of stop words
      */
-    public static HashSet<String> getStopWords(String corpusPath){
+    public static HashSet<String> getStopWords(String corpusPath) throws IOException{
         HashSet<String> toReturn = new HashSet<>();
         File f = new File(corpusPath + "stop_words.txt");
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
@@ -263,10 +263,7 @@ public class ReadFile2 implements Runnable {
                 toReturn.add(line);
             }
         }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        
         return toReturn;
     }
 

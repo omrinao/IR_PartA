@@ -57,10 +57,6 @@ public class RankerWithSemantics extends ARanker {
         HashMap<String, IntWrapper> termOfSemantics = Parser.parseQuery(semanticsQuery.toString(), _stemming, _stopWords);
         HashMap<String, List<PostingTermData>> termsInSemantics = this.extractTermsData(termOfSemantics);
 
-        /*
-        TODO: add documents with city at their text
-         */
-
         HashMap<String, List<TermInDoc>> docsWithQueryTerms = this.getDocumentsTerms(termsInQuery, 0.8f);
         HashMap<String, List<TermInDoc>> semanticsDocs = this.getDocumentsTerms(termsInSemantics, 0.2f);
 
