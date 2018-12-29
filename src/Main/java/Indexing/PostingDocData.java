@@ -1,8 +1,9 @@
 package Indexing;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class PostingDocData {
+public class PostingDocData implements Serializable {
 
     int _maxTF;
     int _uniqueTerms;
@@ -58,10 +59,10 @@ public class PostingDocData {
         return _uniqueTerms;
     }
 
-   /* public String get_city() {
+    public String get_city() {
         return _city;
     }
-*/
+
     public short get_startLine() {
         return _startLine;
     }
@@ -72,6 +73,18 @@ public class PostingDocData {
 
     public String get_relativePath() {
         return _relativePath;
+    }
+
+    public int get_length() {
+        return _length;
+    }
+
+    public String[] get_entities() {
+        return _entities;
+    }
+
+    public float[] get_ranks() {
+        return _ranks;
     }
 
     @Override

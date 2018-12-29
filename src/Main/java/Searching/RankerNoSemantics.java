@@ -25,7 +25,7 @@ public class RankerNoSemantics extends ARanker {
         TODO: add documents with city at their text
          */
 
-        HashMap<String, HashMap<String, PostingTermData>> docsWithQueryTerms = this.getDocumentsTerms(termsInQuery);
+        HashMap<String, List<TermInDoc>> docsWithQueryTerms = this.getDocumentsTerms(termsInQuery, 1);
         System.out.println("Sorted terms per document");
 /*
         TreeSet<Integer> orderedDocNum = new TreeSet<>();

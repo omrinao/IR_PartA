@@ -53,13 +53,13 @@ public class Model extends Observable {
         boolean stem = Boolean.valueOf(stemming);
 
         // --------- initing blocking queues ----------
-        BlockingQueue<Document> beforeParse = new ArrayBlockingQueue<>(2000);
-        BlockingQueue<Document> afterParse = new ArrayBlockingQueue<>(2000);
+        BlockingQueue<Document> beforeParse = new ArrayBlockingQueue<>(1500);
+        BlockingQueue<Document> afterParse = new ArrayBlockingQueue<>(1500);
 
         // --------- initing working classes ----------
         ReadFile2 reader = new ReadFile2(_corpusPath);
         Parser parser = new Parser();
-        Indexer indexer = new Indexer(7000, _writeTo);
+        Indexer indexer = new Indexer(5000, _writeTo);
 
         // --------- setting Read File ----------
         reader.setQueue(beforeParse);
@@ -269,22 +269,34 @@ public class Model extends Observable {
     public PriorityQueue<RetrievedDocument> processQuery
     (String query, List<String> cities, boolean stemming, String corpus, boolean fileQuery){
 
+        PriorityQueue<RetrievedDocument> top50 = new PriorityQueue<>();
+
         if (_loadedDict==null || _loadedDocDict==null){
             setChanged();
             notifyObservers("Error!\nYou must load the dictionary first in order to make a search");
             return null;
         }
 
-        IRanker r = new RankerNoSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo);
-        Searcher s = new Searcher(r, ReadFile2.getStopWords(corpus), stemming);
+        HashSet<String> stopWords = ReadFile2.getStopWords(corpus);
+        //IRanker r = new RankerNoSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo);
+        try {
+            IRanker r = new RankerWithSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo, stopWords);
+            Searcher s = new Searcher(r, stopWords, stemming);
 
-        System.out.println("Starting to search and rank");
-        PriorityQueue<RetrievedDocument> top50 = s.getRelevantDocuments(query, cities);
+            System.out.println("Starting to search and rank");
+            top50 = s.getRelevantDocuments(query, cities);
 
-        if (!fileQuery){
-            int random = (int) (Math.random()*100);
-            writeQueryResults(top50,  "" + random, false);
+            if (!fileQuery){
+                int random = (int) (Math.random()*100);
+                writeQueryResults(top50,  "" + random, false);
+            }
         }
+        catch (IOException e){
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
+
+
 
 
         return top50;
@@ -360,6 +372,10 @@ public class Model extends Observable {
 
     }
 
+    /**
+     * method to write queries by file
+     * @param toWrite - an ordered map bye query and the corresponding results
+     */
     private void writeQueryResultsByFile(TreeMap<Query, PriorityQueue<RetrievedDocument>> toWrite){
         String path = _writeTo + "fileQueryResults.txt";
         try(
@@ -409,9 +425,9 @@ public class Model extends Observable {
             List<Query> queries = ReadFile2.getQueries(queryFile);
             for (Query q :
                     queries){
+                /* need to be changed for better performance */
                 PriorityQueue<RetrievedDocument> top50 = processQuery(q.get_title(), cities, stemming, corpusPath, true);
                 toReturn.put(q, top50);
-                // writeQueryResults(top50, q.get_number(), true);
             }
 
             writeQueryResultsByFile(toReturn);

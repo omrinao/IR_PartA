@@ -593,8 +593,8 @@ public class View implements Observer {
 
     /**
      * this method will fix the view of the strong entities
-     * @param strongEntities
-     * @return
+     * @param strongEntities - string of strong entities
+     * @return - a string of entities proper for view
      */
     private String fixStrongEntities(String strongEntities){
         String valueToReturn = "";
