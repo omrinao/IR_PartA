@@ -40,6 +40,7 @@ public class View implements Observer {
     public TextField corpus;
     public TextField dictpost;
     public CheckBox stemming;
+    public CheckBox _semantics;
 
     public javafx.scene.control.ChoiceBox _languageChoice;
     public ObservableList<String> _languagesList= FXCollections.observableArrayList();
@@ -433,11 +434,12 @@ public class View implements Observer {
         }
 
         else if (!tf_enterQuery.getText().isEmpty() && tf_loadQueryFile.getText().isEmpty()){
-            retrievedDocuments = vm.processQuery(tf_enterQuery.getText(), citiesSelected, stemming.isSelected(), corpus.getText() + '\\');
+            retrievedDocuments = vm.processQuery(tf_enterQuery.getText(), citiesSelected, stemming.isSelected(),
+                    corpus.getText() + '\\', _semantics.isSelected());
         }
 
         else if (tf_enterQuery.getText().isEmpty() && !tf_loadQueryFile.getText().isEmpty()){
-            runQueryFile(tf_loadQueryFile.getText() + '\\');
+            runQueryFile(tf_loadQueryFile.getText() + '\\', _semantics.isSelected());
             return;
         }
 
@@ -504,10 +506,10 @@ public class View implements Observer {
     }
 
 
-    private void runQueryFile(String path){
+    private void runQueryFile(String path, boolean semantics){
 
         Map <Query, PriorityQueue<RetrievedDocument>> queries = vm.processQueryByFile
-                (path, citiesSelected, stemming.isSelected(), corpus.getText() + '\\');
+                (path, citiesSelected, stemming.isSelected(), corpus.getText() + '\\',semantics);
         if (queries==null){
             return;
         }
@@ -593,8 +595,8 @@ public class View implements Observer {
 
     /**
      * this method will fix the view of the strong entities
-     * @param strongEntities
-     * @return
+     * @param strongEntities - string of strong entities
+     * @return - a string of entities proper for view
      */
     private String fixStrongEntities(String strongEntities){
         String valueToReturn = "";

@@ -53,13 +53,13 @@ public class Model extends Observable {
         boolean stem = Boolean.valueOf(stemming);
 
         // --------- initing blocking queues ----------
-        BlockingQueue<Document> beforeParse = new ArrayBlockingQueue<>(2000);
-        BlockingQueue<Document> afterParse = new ArrayBlockingQueue<>(2000);
+        BlockingQueue<Document> beforeParse = new ArrayBlockingQueue<>(1500);
+        BlockingQueue<Document> afterParse = new ArrayBlockingQueue<>(1500);
 
         // --------- initing working classes ----------
         ReadFile2 reader = new ReadFile2(_corpusPath);
         Parser parser = new Parser();
-        Indexer indexer = new Indexer(7000, _writeTo);
+        Indexer indexer = new Indexer(5000, _writeTo);
 
         // --------- setting Read File ----------
         reader.setQueue(beforeParse);
@@ -267,25 +267,44 @@ public class Model extends Observable {
      * @return - priority queue of relevant documents
      */
     public PriorityQueue<RetrievedDocument> processQuery
-    (String query, List<String> cities, boolean stemming, String corpus, boolean fileQuery){
+    (String query, List<String> cities, boolean stemming, String corpus, boolean fileQuery, boolean semantics){
+
+        PriorityQueue<RetrievedDocument> top50 = new PriorityQueue<>();
 
         if (_loadedDict==null || _loadedDocDict==null){
             setChanged();
             notifyObservers("Error!\nYou must load the dictionary first in order to make a search");
             return null;
         }
+        try {
 
-        IRanker r = new RankerNoSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo);
-        Searcher s = new Searcher(r, ReadFile2.getStopWords(corpus), stemming);
+            HashSet<String> stopWords = ReadFile2.getStopWords(corpus);
+            IRanker r;
+            if (!semantics){
+                r = new RankerNoSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo);
+            }
+            else {
+                r = new RankerWithSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo, stopWords);
+            }
 
-        System.out.println("Starting to search and rank");
-        PriorityQueue<RetrievedDocument> top50 = s.getRelevantDocuments(query, cities);
 
-        if (!fileQuery){
-            int random = (int) (Math.random()*100);
-            writeQueryResults(top50,  "" + random, false);
+            Searcher s = new Searcher(r, stopWords, stemming);
+
+            System.out.println("Starting to search and rank");
+            top50 = s.getRelevantDocuments(query, cities);
+
+            if (!fileQuery){
+                int random = (int) (Math.random()*100);
+                writeQueryResults(top50,  "" + random, false);
+            }
         }
-
+        catch (IOException e){
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+            setChanged();
+            notifyObservers("Error occurred \nPlease make sure that all paths are correct!");
+            return null;
+        }
 
         return top50;
     }
@@ -360,6 +379,10 @@ public class Model extends Observable {
 
     }
 
+    /**
+     * method to write queries by file
+     * @param toWrite - an ordered map bye query and the corresponding results
+     */
     private void writeQueryResultsByFile(TreeMap<Query, PriorityQueue<RetrievedDocument>> toWrite){
         String path = _writeTo + "fileQueryResults.txt";
         try(
@@ -391,7 +414,7 @@ public class Model extends Observable {
      * @return - map of query and its results
      */
     public Map<Query, PriorityQueue<RetrievedDocument>> processQueryFile
-            (String queryFile, List<String> cities, boolean stemming, String corpusPath){
+            (String queryFile, List<String> cities, boolean stemming, String corpusPath, boolean semantics){
 
         if (_loadedDict==null || _loadedDocDict==null){
             setChanged();
@@ -407,11 +430,20 @@ public class Model extends Observable {
         });
         try {
             List<Query> queries = ReadFile2.getQueries(queryFile);
+            HashSet<String> stopWords = ReadFile2.getStopWords(corpusPath);
+            IRanker r;
+            if (!semantics){
+                r = new RankerNoSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo);
+            }
+            else {
+                r = new RankerWithSemantics(_loadedDict, cities, _loadedDocDict, stemming, _writeTo, stopWords);
+            }
+            Searcher s = new Searcher(r, stopWords, stemming);
+
             for (Query q :
                     queries){
-                PriorityQueue<RetrievedDocument> top50 = processQuery(q.get_title(), cities, stemming, corpusPath, true);
+                PriorityQueue<RetrievedDocument> top50 = s.getRelevantDocuments(q.get_title(), cities);
                 toReturn.put(q, top50);
-                // writeQueryResults(top50, q.get_number(), true);
             }
 
             writeQueryResultsByFile(toReturn);

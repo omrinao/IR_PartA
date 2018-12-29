@@ -1,8 +1,6 @@
 package Searching;
 
-import Indexing.DocumentDictionary;
-import Indexing.PostingTermData;
-import Indexing.TermData;
+import Indexing.*;
 import Parse.IntWrapper;
 
 import java.io.*;
@@ -108,8 +106,8 @@ public abstract class ARanker implements IRanker  {
      * @param termsData - the mapping of terms and where they occurred
      * @return - mapping of docs and terms with their data
      */
-    protected HashMap<String, HashMap<String, PostingTermData>> getDocumentsTerms(HashMap<String, List<PostingTermData>> termsData){
-        HashMap<String, HashMap<String, PostingTermData>> toReturn = new HashMap<>();
+    protected HashMap<String, List<TermInDoc>> getDocumentsTerms(HashMap<String, List<PostingTermData>> termsData, float termImportance){
+        HashMap<String, List<TermInDoc>> toReturn = new HashMap<>();
 
         for (String term :
                 termsData.keySet()){
@@ -117,8 +115,8 @@ public abstract class ARanker implements IRanker  {
 
             for (PostingTermData data :
                     termsList){
-                HashMap<String, PostingTermData> documentTerms = toReturn.computeIfAbsent(data.get_doc(), k -> new HashMap<>()); // getting the terms of the doc if exist
-                documentTerms.put(term, data);
+                List<TermInDoc> documentTerms = toReturn.computeIfAbsent(data.get_doc(), k -> new ArrayList<>()); // getting the terms of the doc if exist
+                documentTerms.add(new TermInDoc(term, data, termImportance));
             }
         }
         return toReturn;
@@ -128,8 +126,8 @@ public abstract class ARanker implements IRanker  {
      * given an ordered set of docNums will return their posting data
      * @param docNums - ordered set of doc numbers
      * @return - set of the corresponding posting data
-     */
-    protected Set<RetrievedDocument> docsMatchingCity(HashMap<String, HashMap<String, PostingTermData>> docNums){
+
+    protected Set<RetrievedDocument> docsMatchingCity(HashMap<String, List<TermInDoc>> docNums){
         Set<RetrievedDocument> matchingDoc = new LinkedHashSet<>();
         String path = _outputPath + _docsPosting;
         if (_stemming){
@@ -185,7 +183,7 @@ public abstract class ARanker implements IRanker  {
         }
 
         return matchingDoc;
-    }
+    }*/
 
     /**
      * method to extract strong entities
@@ -208,30 +206,37 @@ public abstract class ARanker implements IRanker  {
      * @param allDocs - the entire docs with matching query terms
      * @param cityDocs - docs that match
      */
-    protected void rankByBM25(HashMap<String, HashMap<String, PostingTermData>> allDocs, Set<RetrievedDocument> cityDocs, HashMap<String, IntWrapper> query, double value){
+    protected void rankByBM25(HashMap<String, List<TermInDoc>> allDocs, Set<RetrievedDocument> cityDocs, HashMap<String, IntWrapper> query, double value){
 
         double k = 2;
         double b = 0.75;
 
         for (RetrievedDocument document:
                 cityDocs){
-            HashMap<String, PostingTermData> docMatchingTerms = allDocs.get(document.get_docNum());
+            List<TermInDoc> docMatchingTerms = allDocs.get(document.get_docNum());
 
             if (docMatchingTerms==null) // should never enter here
                 continue;
 
             double rank = 0;
-            for (String termInDoc:
-                    docMatchingTerms.keySet()){
-                int termCount = docMatchingTerms.get(termInDoc).get_termOccurrences();
-                double normalizedDocLength = (document._length/_avgDocLength);
+            for (TermInDoc termInDoc:
+                    docMatchingTerms){
+                int termCount = termInDoc.get_data().get_termOccurrences();
+                double normalizedDocLength = (document.get_length()/_avgDocLength);
 
                 int wordQueryCount = 1; //query.get(termInDoc).get_value();
                 double numerator = (k+1)*termCount;
                 double denominator = termCount + k*(1-b+b*normalizedDocLength);
-                double normalizedDF = Math.log10((_totalDocNum+1)/_corpusDictionary.get(termInDoc).getM_df());
+                double normalizedDF = Math.log10((_totalDocNum+1)/_corpusDictionary.get(termInDoc.get_termName()).getM_df());
 
-                rank += (wordQueryCount*(numerator/denominator)*normalizedDF);
+
+                double wordRank = (wordQueryCount*(numerator/denominator)*normalizedDF);
+                wordRank = wordRank*termInDoc.get_multiplier();
+                if (document.strongEntitiesContainIgnoreCases(termInDoc.get_termName())){
+                    wordRank = wordRank*1.5;
+                }
+
+                rank += wordRank;
             }
             document.add_rank(value*rank);
         }
@@ -244,20 +249,20 @@ public abstract class ARanker implements IRanker  {
      * @param query - the query
      * @param value - the value of this ranking
      */
-    protected void rankByPosition(HashMap<String, HashMap<String, PostingTermData>> allDocs,
+    protected void rankByPosition(HashMap<String, List<TermInDoc>> allDocs,
                                   Set<RetrievedDocument> cityDocs, HashMap<String, IntWrapper> query, double value){
 
         for (RetrievedDocument document:
                 cityDocs){
-            HashMap<String, PostingTermData> docMatchingTerms = allDocs.get(document.get_docNum());
+            List<TermInDoc> docMatchingTerms = allDocs.get(document.get_docNum());
 
             if (docMatchingTerms==null) // should never enter here
                 continue;
 
             double rank = 0;
-            for (String termInDoc:
-                    docMatchingTerms.keySet()){
-                PostingTermData t = docMatchingTerms.get(termInDoc);
+            for (TermInDoc termInDoc:
+                    docMatchingTerms){
+                PostingTermData t = termInDoc.get_data();
                 byte first20 = t.get_locations()[0];
                 byte last20 = t.get_locations()[1];
 
@@ -265,6 +270,61 @@ public abstract class ARanker implements IRanker  {
             }
             document.add_rank(value*rank);
         }
+    }
+
+    protected void cosSim(HashMap<String, List<TermInDoc>> allDocs,
+                          Set<RetrievedDocument> cityDocs,
+                          double value){
+
+    }
+
+
+    protected Set<RetrievedDocument> docsMatchingCity(HashMap<String, List<TermInDoc>> docNums){
+        Set<RetrievedDocument> matchingDoc = new HashSet<>();
+
+        for (String docS :
+                docNums.keySet()){
+            try {
+                Integer doc = Integer.valueOf(docS);
+                DocumentData dData = _documentDictionary.getDocData(doc);
+                String officialName = dData.get_docName();
+                PostingDocData dPos = dData.get_data();
+
+                if (_cities.isEmpty() || _cities.contains(dPos.get_city())){
+                    ArrayList<String> strongEntities = getEntities(dPos);
+                    RetrievedDocument retrievedDocument = new RetrievedDocument();
+                    retrievedDocument.set_city(dPos.get_city());
+                    retrievedDocument.set_docNum(String.valueOf(doc));
+                    retrievedDocument.set_length(dPos.get_length());
+                    retrievedDocument.set_startLine(dPos.get_startLine());
+                    retrievedDocument.set_endLine(dPos.get_endLine());
+                    retrievedDocument.set_file(dPos.get_relativePath());
+                    retrievedDocument.set_docName(officialName);
+                    retrievedDocument.set_strongEntities(strongEntities);
+
+                    matchingDoc.add(retrievedDocument);
+                }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                System.out.println(e.getMessage());
+            }
+        }
+
+        return matchingDoc;
+    }
+
+
+    private ArrayList<String> getEntities(PostingDocData postingDocData){
+        String[] entities = postingDocData.get_entities();
+        float[] ranks = postingDocData.get_ranks();
+
+        ArrayList<String> toReturn = new ArrayList<>();
+        for (int i=0; i<entities.length; i++){
+            toReturn.add(entities[i] + "-" + ranks[i]);
+        }
+
+        return toReturn;
     }
 
 }

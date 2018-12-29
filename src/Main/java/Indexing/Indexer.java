@@ -186,10 +186,12 @@ public class Indexer implements Runnable {
                 }
 
                 Integer docNum = Integer.valueOf(d.getDocNum());
-                _docDictionary.insertDoc(docNum, -1, d.get_docName());
-                _docData.put(docNum,
+                PostingDocData dData = new PostingDocData(d.getMaxTF(), docTerms.size(), d.get_startLine(),
+                        d.get_endLine(), d.get_path(), d.getLength(), fixedCity, strongEntities);
+                _docDictionary.insertDoc(docNum, -1, d.get_docName(), dData);
+                /* _docData.put(docNum,
                         new PostingDocData(d.getMaxTF(), docTerms.size(), d.get_startLine(),
-                                d.get_endLine(), d.get_path(), d.getLength(), fixedCity, strongEntities));
+                                d.get_endLine(), d.get_path(), d.getLength(), fixedCity, strongEntities)); */
 
                 if (!d.getLanguage().isEmpty()){
                     _docLanguages.add(d.getLanguage());
@@ -212,7 +214,7 @@ public class Indexer implements Runnable {
         }
 
         writePartialPostings(); // after finished all documents, empty the final partial posting
-        writeToDocPosting();
+        //writeToDocPosting();
 
         System.out.println("FINISHED INDEXING at: " + java.time.LocalTime.now());
         System.out.println("doc indexed: "+m_docsIndexed);

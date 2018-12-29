@@ -4,17 +4,17 @@ import java.util.ArrayList;
 
 public class RetrievedDocument implements Comparable{
 
-    int _startLine;
-    int _endLine;
-    String _docNum;
-    String _docName;
-    String _city;
-    int _length;
-    ArrayList<String> _strongEntities;
-    double _rank;
+    private int _startLine;
+    private int _endLine;
+    private String _docNum;
+    private String _docName;
+    private String _city;
+    private int _length;
+    private ArrayList<String> _strongEntities;
+    private double _rank;
 
-    String _text;
-    String _file;
+    private String _text;
+    private String _file;
 
     public String get_file() {
         return _file;
@@ -148,5 +148,16 @@ public class RetrievedDocument implements Comparable{
     public String toString(){
         return String.format("Name: %s, File: %s, Start: %s, End: %s, Rank: %s, City: %s, Length: %s",
                 _docName, _file, _startLine, _endLine, _rank, _city, _length);
+    }
+
+    public boolean strongEntitiesContainIgnoreCases(String term) {
+        for (String s :
+                _strongEntities){
+            String[] splitted = s.split("-");
+            if (splitted[0].equals(term)){
+                return true;
+            }
+        }
+        return false;
     }
 }

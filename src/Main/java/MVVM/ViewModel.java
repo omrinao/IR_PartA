@@ -56,12 +56,12 @@ public class ViewModel extends Observable implements Observer {
         return _model.getCities(outputDirectory, stemming);
     }
 
-    public PriorityQueue<RetrievedDocument> processQuery(String query, List<String> cities, boolean stemming, String corpus){
-        return _model.processQuery(query, cities, stemming, corpus, false);
+    public PriorityQueue<RetrievedDocument> processQuery(String query, List<String> cities, boolean stemming, String corpus, boolean semantics){
+        return _model.processQuery(query, cities, stemming, corpus, false, semantics);
     }
 
     public Map<Query, PriorityQueue<RetrievedDocument>> processQueryByFile
-            (String queryFile, List<String> cities, boolean stemming, String corpusPath){
-        return _model.processQueryFile(queryFile, cities, stemming, corpusPath);
+            (String queryFile, List<String> cities, boolean stemming, String corpusPath, boolean semantics){
+        return _model.processQueryFile(queryFile, cities, stemming, corpusPath, semantics);
     }
 }
