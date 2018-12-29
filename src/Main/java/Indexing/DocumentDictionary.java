@@ -20,8 +20,8 @@ public class DocumentDictionary implements Serializable {
         _dictionary.put(id, data);
     }
 
-    public void insertDoc(Integer id, long pointer, String docName, PostingDocData data){
-        DocumentData d = new DocumentData(pointer, docName, data);
+    public void insertDoc(Integer id, long pointer, String docName, PostingDocData data, double weightedLength){
+        DocumentData d = new DocumentData(pointer, docName, data, weightedLength);
         insertDoc(id, d);
     }
 

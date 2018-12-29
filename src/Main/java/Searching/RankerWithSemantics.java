@@ -54,23 +54,28 @@ public class RankerWithSemantics extends ARanker {
             }
         }
 
-        HashMap<String, IntWrapper> termOfSemantics = Parser.parseQuery(semanticsQuery.toString(), _stemming, _stopWords);
-        HashMap<String, List<PostingTermData>> termsInSemantics = this.extractTermsData(termOfSemantics);
+        HashMap<String, IntWrapper> queryOfSemantics = Parser.parseQuery(semanticsQuery.toString(), _stemming, _stopWords);
+        HashMap<String, IntWrapper> mergedQuery = new HashMap<>(queryOfSemantics);
+        mergedQuery.putAll(query);
+        HashMap<String, List<PostingTermData>> termsInSemantics = this.extractTermsData(queryOfSemantics);
 
         HashMap<String, List<TermInDoc>> docsWithQueryTerms = this.getDocumentsTerms(termsInQuery, 0.8f);
         HashMap<String, List<TermInDoc>> semanticsDocs = this.getDocumentsTerms(termsInSemantics, 0.2f);
 
-        mergeQueries(docsWithQueryTerms, semanticsDocs);
+        mergeDocuments(docsWithQueryTerms, semanticsDocs);
         System.out.println("Sorted terms per document");
 
         Set<RetrievedDocument> docsMatchingCity = this.docsMatchingCity(docsWithQueryTerms);
         System.out.println("Matched by city");
 
-        this.rankByBM25(docsWithQueryTerms, docsMatchingCity, query, 0.99);
+        this.rankByBM25(docsWithQueryTerms, docsMatchingCity, mergedQuery, 0.89);
         System.out.println("Ranked by BM25");
 
         this.rankByPosition(docsWithQueryTerms, docsMatchingCity, query, 0.01);
         System.out.println("Ranked by positioning");
+
+        this.cosSim(docsWithQueryTerms, docsMatchingCity, mergedQuery, 0.1);
+        System.out.println("Ranked with Cosine Similarity");
 
         PriorityQueue<RetrievedDocument> toReturn = new PriorityQueue<>(docsMatchingCity);
         System.out.println("Finished query: " + query.keySet() +" --- Returned " + toReturn.size() + " docs\n");
@@ -88,13 +93,13 @@ public class RankerWithSemantics extends ARanker {
     /**
      * method to merge terms of wuery with ones of semantics
      * @param docsWithQueryTerms - the documents of the actual terms
-     * @param semanticsQuery - the documents of the semantics terms
+     * @param docsWithSemanticTerms - the documents of the semantics terms
      */
-    private void mergeQueries(HashMap<String, List<TermInDoc>> docsWithQueryTerms, HashMap<String, List<TermInDoc>> semanticsQuery) {
+    private void mergeDocuments(HashMap<String, List<TermInDoc>> docsWithQueryTerms, HashMap<String, List<TermInDoc>> docsWithSemanticTerms) {
         for (String docNum :
                 docsWithQueryTerms.keySet()){
-            if (semanticsQuery.containsKey(docNum)){
-                docsWithQueryTerms.get(docNum).addAll(semanticsQuery.get(docNum));
+            if (docsWithSemanticTerms.containsKey(docNum)){
+                docsWithQueryTerms.get(docNum).addAll(docsWithSemanticTerms.get(docNum));
             }
         }
     }

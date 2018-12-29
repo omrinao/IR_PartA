@@ -458,49 +458,4 @@ public class Model extends Observable {
         return toReturn;
     }
 
-
-    public static void main(String[] args){
-        Model m = new Model();
-
-      
-        m._writeTo = "C:\\Users\\חגי קלינהוף\\Desktop\\Engine Output\\Doc Test\\";
-        m._corpusPath = "C:\\Users\\חגי קלינהוף\\Desktop\\שנה ג'\\סמסטר ה'\\אחזור מידע\\פרויקט מנוע\\Part 1 tests\\corpus\\";
-        String[] details = {"false", m._corpusPath, m._writeTo};
-        m.loadDict(details);
-/*
-
-        String query = "Falkland petroleum exploration";
-        PriorityQueue<RetrievedDocument> retrievedDocuments = m.processQuery(query, new ArrayList<>(), false, m._corpusPath, false);
-
-        TreeSet<RetrievedDocument> sorted = new TreeSet<>(new Comparator<RetrievedDocument>() {
-            @Override
-            public int compare(RetrievedDocument o1, RetrievedDocument o2) {
-                return o1.get_docName().compareTo(o2.get_docName());
-            }
-        });
-        sorted.addAll(retrievedDocuments);
-        for (RetrievedDocument d:
-                retrievedDocuments)
-            System.out.println(d);
-*/
-        try (
-                BufferedWriter bw = new BufferedWriter(new PrintWriter("C:\\Users\\omri\\Desktop\\IR_PartA\\doctest.txt"));
-                RandomAccessFile ra = new RandomAccessFile("C:\\Users\\omri\\Desktop\\IR_PartA\\DocumentPosting.txt", "r");
-                ){
-
-            for (Integer id :
-                    m._loadedDocDict.getKeysSet()){
-                long pointer = m._loadedDocDict.getPointer(id);
-                ra.seek(pointer);
-
-                String capturedLine = ra.readLine();
-                bw.write(capturedLine+"\n");
-                bw.flush();
-            }
-        }
-        catch (IOException e){
-            e.printStackTrace();
-            System.out.println(e.getMessage());
-        }
-    }
 }

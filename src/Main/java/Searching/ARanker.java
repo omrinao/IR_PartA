@@ -224,7 +224,7 @@ public abstract class ARanker implements IRanker  {
                 int termCount = termInDoc.get_data().get_termOccurrences();
                 double normalizedDocLength = (document.get_length()/_avgDocLength);
 
-                int wordQueryCount = 1; //query.get(termInDoc).get_value();
+                int wordQueryCount = 1; //termCountInQuery(query, termInDoc.get_termName());
                 double numerator = (k+1)*termCount;
                 double denominator = termCount + k*(1-b+b*normalizedDocLength);
                 double normalizedDF = Math.log10((_totalDocNum+1)/_corpusDictionary.get(termInDoc.get_termName()).getM_df());
@@ -272,13 +272,56 @@ public abstract class ARanker implements IRanker  {
         }
     }
 
+
     protected void cosSim(HashMap<String, List<TermInDoc>> allDocs,
                           Set<RetrievedDocument> cityDocs,
+                          HashMap<String, IntWrapper> query,
                           double value){
+        double totalDocNum = _totalDocNum; // total doc number for normalization
+
+        double queryWeightedLength = 0;     // weighted length of query.
+        for (IntWrapper s :
+                query.values()){
+            queryWeightedLength += Math.pow(s.get_value(),2) ;
+        }
+        queryWeightedLength = Math.sqrt(queryWeightedLength);
+
+
+        for (RetrievedDocument document :
+                cityDocs){
+            List<TermInDoc> docMatchingTerms = allDocs.get(document.get_docNum());
+            if (docMatchingTerms==null) // should never enter here
+                continue;
+
+            double rank = 0;
+            double numerator = 0;
+            double weightedLength = _documentDictionary.getDocData(Integer.valueOf(document.get_docNum())).get_weightedLength();
+            double maxTf = document.get_maxTf();
+
+            // ---- calc of numerator: w_q*w_d
+            for (TermInDoc termInDoc :
+                    docMatchingTerms){
+                String termName = termInDoc.get_termName();
+                double tf = termInDoc.get_data().get_termOccurrences()/maxTf;
+                double idf = Math.log10(totalDocNum/_corpusDictionary.get(termName).getM_df());
+                numerator += tf*idf*termCountInQuery(query, termName)*termInDoc.get_multiplier();
+            }
+
+            // calc denominator
+            double denominator = Math.sqrt(weightedLength*queryWeightedLength);
+            rank = numerator/denominator;
+
+            document.add_rank(rank*value);
+        }
 
     }
 
 
+    /**
+     * given an ordered set of docNums will return their posting data
+     * @param docNums - ordered set of doc numbers
+     * @return - set of the corresponding posting data
+    */
     protected Set<RetrievedDocument> docsMatchingCity(HashMap<String, List<TermInDoc>> docNums){
         Set<RetrievedDocument> matchingDoc = new HashSet<>();
 
@@ -301,6 +344,7 @@ public abstract class ARanker implements IRanker  {
                     retrievedDocument.set_file(dPos.get_relativePath());
                     retrievedDocument.set_docName(officialName);
                     retrievedDocument.set_strongEntities(strongEntities);
+                    retrievedDocument.set_maxTf(dPos.get_maxTF());
 
                     matchingDoc.add(retrievedDocument);
                 }
@@ -314,7 +358,11 @@ public abstract class ARanker implements IRanker  {
         return matchingDoc;
     }
 
-
+    /**
+     * method to get the strong entities of a document
+     * @param postingDocData - the posting data
+     * @return - list of string representing the strong entities of this document
+     */
     private ArrayList<String> getEntities(PostingDocData postingDocData){
         String[] entities = postingDocData.get_entities();
         float[] ranks = postingDocData.get_ranks();
@@ -325,6 +373,33 @@ public abstract class ARanker implements IRanker  {
         }
 
         return toReturn;
+    }
+
+    /**
+     * method to get the count of a term in a given query
+     * @param query - the given query
+     * @param term - the observed term
+     * @return - the count of term in a query, 0 if does not exist
+     */
+    private int termCountInQuery(HashMap<String, IntWrapper> query, String term) {
+        IntWrapper result = null;
+        if (query.containsKey(term)){
+            result = query.get(term);
+        }
+        else {
+            term = term.toLowerCase();
+            if (query.containsKey(term)){
+                result = query.get(term);
+            }
+            else {
+                term = term.toUpperCase();
+                if (query.containsKey(term)){
+                    result = query.get(term);
+                }
+            }
+        }
+
+        return (result==null ? 0 : result.get_value());
     }
 
 }

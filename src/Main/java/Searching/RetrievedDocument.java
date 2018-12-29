@@ -12,6 +12,7 @@ public class RetrievedDocument implements Comparable{
     private int _length;
     private ArrayList<String> _strongEntities;
     private double _rank;
+    private int _maxTf;
 
     private String _text;
     private String _file;
@@ -98,6 +99,14 @@ public class RetrievedDocument implements Comparable{
 
     public void set_docName(String _docName) {
         this._docName = _docName;
+    }
+
+    public int get_maxTf() {
+        return _maxTf;
+    }
+
+    public void set_maxTf(int _maxTf) {
+        this._maxTf = _maxTf;
     }
 
     /**

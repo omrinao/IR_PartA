@@ -69,11 +69,13 @@ public class Indexer implements Runnable {
 
                 d.calcLength(); // setting length of the document for later use
                 totalDocsLength += d.getLength();
+                double documentWeightedLength = 0;
 
                 PriorityQueue <StrongEntity> strongEntities = new PriorityQueue<>();
                 LinkedHashMap<String, ArrayList<Integer>> docTerms = d.getTermsMap();
                 for (String term: docTerms.keySet()) {//inserting to dictionary + partial posting
                     int totalFreq = docTerms.get(term).size();
+                    documentWeightedLength += Math.pow(totalFreq, 2);
 
                     if (term.equals(term.toLowerCase())){ // it's a lower case term or non alphabetic term
                         if (_corpusDictionary.containsKey(term)){
@@ -184,11 +186,11 @@ public class Indexer implements Runnable {
                         }
                     }
                 }
-
+                documentWeightedLength = Math.sqrt(documentWeightedLength);
                 Integer docNum = Integer.valueOf(d.getDocNum());
                 PostingDocData dData = new PostingDocData(d.getMaxTF(), docTerms.size(), d.get_startLine(),
                         d.get_endLine(), d.get_path(), d.getLength(), fixedCity, strongEntities);
-                _docDictionary.insertDoc(docNum, -1, d.get_docName(), dData);
+                _docDictionary.insertDoc(docNum, -1, d.get_docName(), dData,  documentWeightedLength);
                 /* _docData.put(docNum,
                         new PostingDocData(d.getMaxTF(), docTerms.size(), d.get_startLine(),
                                 d.get_endLine(), d.get_path(), d.getLength(), fixedCity, strongEntities)); */
