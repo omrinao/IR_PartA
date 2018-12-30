@@ -11,9 +11,8 @@ import java.util.*;
 
 public class RankerWithSemantics extends ARanker {
 
-    //private SemanticAid _semantics;
-    private Semantics _semantics;
-    private HashSet<String> _stopWords;
+    private Semantics _semantics;       // semantic operator
+    private HashSet<String> _stopWords; // stop words for synonyms analysis
 
     public RankerWithSemantics(HashMap<String, TermData> _corpusDictionary, List<String> _cities, DocumentDictionary docDict, boolean _stemming, String _outputPath, HashSet<String> stopWords) throws IOException {
         super(_corpusDictionary, _cities, docDict, _stemming, _outputPath);
@@ -53,6 +52,7 @@ public class RankerWithSemantics extends ARanker {
                 System.out.println("whoops");
             }
         }
+        System.out.println("Got all semantic terms");
 
         HashMap<String, IntWrapper> queryOfSemantics = Parser.parseQuery(semanticsQuery.toString(), _stemming, _stopWords);
         HashMap<String, IntWrapper> mergedQuery = new HashMap<>(queryOfSemantics);

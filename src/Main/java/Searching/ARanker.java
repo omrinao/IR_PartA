@@ -8,13 +8,13 @@ import java.util.*;
 
 public abstract class ARanker implements IRanker  {
 
-    protected HashMap<String, TermData> _corpusDictionary;
-    protected DocumentDictionary _documentDictionary;
-    protected List<String> _cities;
-    protected int _totalDocNum;
-    protected double _avgDocLength;
-    protected boolean _stemming;
-    protected String _outputPath;
+    protected HashMap<String, TermData> _corpusDictionary; // corpus terms dictionary
+    protected DocumentDictionary _documentDictionary;      // corpus docs dictionary
+    protected List<String> _cities;                        // list of city constrains
+    protected int _totalDocNum;                            // total doc number
+    protected double _avgDocLength;                        // avg doc length
+    protected boolean _stemming;                           // weather stemming required
+    protected String _outputPath;                          // path of posting files
 
     protected final String _termsPosting = "FinalPosting";
     protected final String _docsPosting = "DocumentPosting";

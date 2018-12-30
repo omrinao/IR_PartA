@@ -4,18 +4,18 @@ import java.util.ArrayList;
 
 public class RetrievedDocument implements Comparable{
 
-    private int _startLine;
-    private int _endLine;
-    private String _docNum;
-    private String _docName;
-    private String _city;
-    private int _length;
-    private ArrayList<String> _strongEntities;
-    private double _rank;
-    private int _maxTf;
+    private int _startLine;     // start line of the document
+    private int _endLine;       // end line of the document
+    private String _docNum;     // document number
+    private String _docName;    // document official name
+    private String _city;       // document city
+    private int _length;        // document length
+    private ArrayList<String> _strongEntities;  // document's strong entities
+    private double _rank;       // document rank
+    private int _maxTf;         // document max term frequency
 
-    private String _text;
-    private String _file;
+    private String _text;       // document text for later review
+    private String _file;       // which file the document is in
 
     public String get_file() {
         return _file;
@@ -159,6 +159,11 @@ public class RetrievedDocument implements Comparable{
                 _docName, _file, _startLine, _endLine, _rank, _city, _length);
     }
 
+    /**
+     * method that checks if a given term is a strong entity in this document
+     * @param term - the checked term
+     * @return - true if term is string entity, false otherwise
+     */
     public boolean strongEntitiesContainIgnoreCases(String term) {
         for (String s :
                 _strongEntities){

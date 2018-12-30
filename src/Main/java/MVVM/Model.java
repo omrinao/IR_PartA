@@ -51,60 +51,65 @@ public class Model extends Observable {
      */
     private void startPartA(String stemming){
         boolean stem = Boolean.valueOf(stemming);
-
-        // --------- initing blocking queues ----------
-        BlockingQueue<Document> beforeParse = new ArrayBlockingQueue<>(1500);
-        BlockingQueue<Document> afterParse = new ArrayBlockingQueue<>(1500);
-
-        // --------- initing working classes ----------
-        ReadFile2 reader = new ReadFile2(_corpusPath);
-        Parser parser = new Parser();
-        Indexer indexer = new Indexer(5000, _writeTo);
-
-        // --------- setting Read File ----------
-        reader.setQueue(beforeParse);
-
-        // --------- setting Parser ------------
-        parser.setStemmer(stem);
-        parser.setStopWords(reader.getStopWords());
-        parser.setBeforeParse(beforeParse);
-        parser.setAfterParse(afterParse);
-
-        // --------- setting Indexer -----------
-        indexer.setDocsQueue(afterParse);
-        indexer.setStemmer(stem);
-
-        // ----------- initing threads ----------
-        long start = System.nanoTime();
-
-        Thread tReader = new Thread(reader);
-        tReader.start();
-        Thread tParser = new Thread(parser);
-        tParser.start();
-        Thread tIndexer = new Thread(indexer);
-        tIndexer.start();
-
-        HashMap<Path, Exception> m = null;
         try {
-            tIndexer.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            // --------- initing blocking queues ----------
+            BlockingQueue<Document> beforeParse = new ArrayBlockingQueue<>(1500);
+            BlockingQueue<Document> afterParse = new ArrayBlockingQueue<>(1500);
+
+            // --------- initing working classes ----------
+            ReadFile2 reader = new ReadFile2(_corpusPath);
+            Parser parser = new Parser();
+            Indexer indexer = new Indexer(5000, _writeTo);
+
+            // --------- setting Read File ----------
+            reader.setQueue(beforeParse);
+
+            // --------- setting Parser ------------
+            parser.setStemmer(stem);
+            parser.setStopWords(reader.getStopWords());
+            parser.setBeforeParse(beforeParse);
+            parser.setAfterParse(afterParse);
+
+            // --------- setting Indexer -----------
+            indexer.setDocsQueue(afterParse);
+            indexer.setStemmer(stem);
+
+            // ----------- initing threads ----------
+            long start = System.nanoTime();
+
+            Thread tReader = new Thread(reader);
+            tReader.start();
+            Thread tParser = new Thread(parser);
+            tParser.start();
+            Thread tIndexer = new Thread(indexer);
+            tIndexer.start();
+
+            HashMap<Path, Exception> m = null;
+            try {
+                tIndexer.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            _languagesFound = indexer.get_docLanguages();
+            _loadedDict = indexer._corpusDictionary;
+            _loadedDocDict = indexer.get_docDictionary();
+
+            long end = System.nanoTime();
+            long total = end-start;
+            long milis = total/1000000;
+
+            String time = "Done! \nTotal Time : " + milis/1000.00 + " Seconds";
+            String results = String.format("%s \nNumber of indexed docs: %s\nNumber of different terms in the corpus: %s",
+                    time, indexer.getNumOfIndexed(), indexer.getNumOfTerms());
+
+            setChanged();
+            notifyObservers(results);
         }
-
-        _languagesFound = indexer.get_docLanguages();
-        _loadedDict = indexer._corpusDictionary;
-        _loadedDocDict = indexer.get_docDictionary();
-
-        long end = System.nanoTime();
-        long total = end-start;
-        long milis = total/1000000;
-
-        String time = "Done! \nTotal Time : " + milis/1000.00 + " Seconds";
-        String results = String.format("%s \nNumber of indexed docs: %s\nNumber of different terms in the corpus: %s",
-                time, indexer.getNumOfIndexed(), indexer.getNumOfTerms());
-
-        setChanged();
-        notifyObservers(results);
+        catch (Exception e){
+            setChanged();
+            notifyObservers("Error occurred!\n" + e.getMessage());
+        }
     }
 
 

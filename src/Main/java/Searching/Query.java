@@ -2,10 +2,10 @@ package Searching;
 
 public class Query {
 
-    private String _title;
-    private String _number;
-    private String _description;
-    private String _narrative;
+    private String _title;       // query title
+    private String _number;      // query number
+    private String _description; // query description
+    private String _narrative;   // query narrative
 
     public Query() {
     }

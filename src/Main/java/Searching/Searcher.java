@@ -12,9 +12,9 @@ import java.util.PriorityQueue;
 
 public class Searcher {
 
-    IRanker _ranker;
-    boolean _stemming;
-    HashSet<String> _stopWords;
+    private IRanker _ranker;            // strategy design pattern used to rank documents
+    private boolean _stemming;          // weather stemming is required
+    private HashSet<String> _stopWords; // stop word of the given corpus
 
     public Searcher(IRanker ranker, HashSet<String> stopWords, boolean stemming){
         _ranker = ranker;
